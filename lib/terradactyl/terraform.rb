@@ -36,7 +36,7 @@ module Terradactyl
       rescue => e
         abort <<-HODOR
 *** #{e.message} ***
-Minimum:  #{minimum} | Current:  #{current} | Required: #{required}
+Minimum: #{minimum} | Current: #{current} | Required: #{required}
 
 Check your `#{Config::CONFIG_FILE}` and ensure that both the config
 and your installed Terraform binary meet the requirements.
