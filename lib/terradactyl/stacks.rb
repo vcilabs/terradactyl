@@ -1,39 +1,14 @@
 module Terradactyl
 
-  class StacksFilterDefault
-
-    def sift(stacks)
-      stacks
-    end
-
-  end
-
-  class StacksFilterGitDiffHead
-
-    def git_cmd
-      %x{git --no-pager diff --name-only HEAD}
-    end
-
-    def sift(stacks)
-      Dir.chdir config.base_folder
-      stacks & git_cmd.split.map { |p| File.dirname(p) }.sort.uniq
-    end
-
-  end
-
-  class StacksFilterGitDiffFetchHead < StacksFilterGitDiffHead
-
-    def git_cmd
-      %x{git --no-pager diff --name-only FETCH_HEAD ORIG_HEAD}
-    end
-
-  end
-
   class Stacks
 
     include Enumerable
 
-    def initialize(filter: StacksFilterDefault.new)
+    def self.load(*args)
+      new *args
+    end
+
+    def initialize(filter: StacksPlanFilterDefault.new)
       @base_dir = "#{Rake.original_dir}/#{config.base_folder}"
       @stacks   = filter.sift(stacks_all).map { |s| Stack.new(s) }
     end

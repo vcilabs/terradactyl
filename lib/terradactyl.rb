@@ -11,6 +11,7 @@ require_relative 'terradactyl/common'
 require_relative 'terradactyl/terraform'
 require_relative 'terradactyl/stack'
 require_relative 'terradactyl/stacks'
+require_relative 'terradactyl/filters'
 
 include Terradactyl
 include Common
@@ -31,8 +32,12 @@ TerraformVersion.seatbelt
 #   stack.plan
 # end
 
-Stacks.new(filter: StacksFilterGitDiffHead.new).each do |stack|
-  puts "Stack: #{stack.name}"
-  stack.init
-  stack.plan
+# Stacks.new(filter: StacksPlanFilterGitDiffHead.new).each do |stack|
+#   puts "Stack: #{stack.name}"
+#   stack.init
+#   stack.plan
+# end
+
+Stacks.load(filter: StacksApplyFilterPrePlanned.new).each do |stack|
+  stack.apply
 end
