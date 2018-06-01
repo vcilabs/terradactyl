@@ -19,6 +19,7 @@ module Terradactyl
     attr_accessor :terradactyl
 
     def initialize
+      abort "Could not find load `#{CONFIG_FILE}`" unless File.exist?(CONFIG_FILE)
       load_data_file
     end
 
