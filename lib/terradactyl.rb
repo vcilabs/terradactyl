@@ -38,6 +38,11 @@ TerraformVersion.seatbelt
 #   stack.plan
 # end
 
-Stacks.load(filter: StacksApplyFilterPrePlanned.new).each do |stack|
-  stack.apply
+# Stacks.load(filter: StacksApplyFilterPrePlanned.new).each do |stack|
+#   stack.apply
+# end
+
+Stacks.new.each do |stack|
+  puts "Stack: #{stack.name}"
+  stack.clean
 end

@@ -58,6 +58,15 @@ module Terradactyl
       "<name: #{name}, path: #{path}>"
     end
 
+    def clean
+      Dir.chdir stack_path
+      removals = config.cleanup.match.map { |p| Dir.glob("**/#{p}") }
+      removals << %x{find . -type d -empty}.split if config.cleanup.empty
+      removals.flatten.sort.uniq.each do |path|
+         FileUtils.rm_rf path
+      end
+    end
+
     private
 
     attr_reader :stack_name, :base_dir, :stack_path, :plan_path
