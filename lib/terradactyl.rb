@@ -12,6 +12,7 @@ require_relative 'terradactyl/terraform'
 require_relative 'terradactyl/stack'
 require_relative 'terradactyl/stacks'
 require_relative 'terradactyl/filters'
+require_relative 'terradactyl/tasks'
 
 include Terradactyl
 include Common
@@ -42,7 +43,8 @@ TerraformVersion.seatbelt
 #   stack.apply
 # end
 
-Stacks.new.each do |stack|
-  puts "Stack: #{stack.name}"
-  stack.clean
-end
+# Stacks.new.each do |stack|
+#   puts "Stack: #{stack.name}"
+#   stack.clean
+# end
+
