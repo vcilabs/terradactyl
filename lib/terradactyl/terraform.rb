@@ -35,12 +35,10 @@ module Terradactyl
         raise ERROR_VERSION unless (current == required)
       rescue => e
         abort <<-HODOR
-*** Terraform Version Requirements: ***
-Minimum:  #{minimum}
-Required: #{required}
-Current:  #{current}
-Error:    #{e.message}
-Check your Terradactyl `terraform.yml` and ensure that both the config
+*** #{e.message} ***
+Minimum:  #{minimum} | Current:  #{current} | Required: #{required}
+
+Check your `#{Config::CONFIG_FILE}` and ensure that both the config
 and your installed Terraform binary meet the requirements.
 HODOR
       end
