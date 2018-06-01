@@ -22,4 +22,17 @@ TerraformVersion.seatbelt
 # x.plan
 # x.apply
 
-puts Stacks.new.list
+# puts Stacks.new.list
+# puts Stacks.new(filter: StacksFilterGitDiffHead.new).list
+
+# Stacks.new.each do |stack|
+#   puts "Stack: #{stack.name}"
+#   stack.init
+#   stack.plan
+# end
+
+Stacks.new(filter: StacksFilterGitDiffHead.new).each do |stack|
+  puts "Stack: #{stack.name}"
+  stack.init
+  stack.plan
+end

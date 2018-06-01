@@ -2,8 +2,6 @@ module Terradactyl
 
   class Stack
 
-    attr_reader :stack_name, :base_dir, :stack_path, :plan_path
-
     def initialize(stack_name)
       @stack_name = stack_name
       @base_dir   = "#{Rake.original_dir}/#{config.base_folder}"
@@ -44,7 +42,25 @@ module Terradactyl
         "-parallelism=#{parallelism}", plan_path
     end
 
+    def name
+      @stack_name
+    end
+
+    def path
+      @stack_path
+    end
+
+    def <=>(other)
+      self.name <=> other.name
+    end
+
+    def to_s
+      "<name: #{name}, path: #{path}>"
+    end
+
     private
+
+    attr_reader :stack_name, :base_dir, :stack_path, :plan_path
 
     def expand_path_vars
       ENV['TF_PLUGIN_CACHE_DIR'] = File.expand_path(ENV['TF_PLUGIN_CACHE_DIR'])
