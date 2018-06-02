@@ -79,6 +79,14 @@ module Terradactyl
       FileUtils.rm_rf @plan_path
     end
 
+    def show_plan_file
+      if config.misc.quiet
+        config.misc.quiet = false
+        execute terraform_path, :show, plan_path
+        config.misc.quiet = true
+      end
+    end
+
     def clean
       Dir.chdir stack_path
       removals = config.cleanup.match.map { |p| Dir.glob("**/#{p}") }
@@ -118,8 +126,9 @@ module Terradactyl
     def execute(*args)
       args.map!(&:to_s)
       debug(args)
-      result = Open3.popen2e(ENV, *args) do |stdin, stdout_err, wait_thru|
-        puts $_ while stdout_err.gets unless config.misc.quiet
+      result = Open3.popen3(ENV, *args) do |stdin, stdout, stderr, wait_thru|
+        puts $_ while stdout.gets unless config.misc.quiet
+        puts $_ while stderr.gets
         wait_thru.value.exitstatus
       end
       puts

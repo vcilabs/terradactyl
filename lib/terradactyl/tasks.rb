@@ -116,6 +116,7 @@ module Terradactyl
             print_crit "Plan failed: #{stack.name}"; abort
           when 2
             print_warning "Changes detected: #{stack.name}"; puts
+            stack.show_plan_file
           else
             fail
           end
