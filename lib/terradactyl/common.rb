@@ -42,7 +42,7 @@ module Terradactyl
     end
 
     def print_line(msg, color=:light_blue)
-      string = "    #{msg}"
+      string = "     #{msg}"
       puts string.send(color.to_sym)
     end
 
@@ -55,7 +55,7 @@ module Terradactyl
       indent = centre + msg.size/2 - 1
       header = [border, ("#%#{indent}s" % "#{tag} | #{msg}"), border].join("\n")
       puts header.blue
-      puts "\n"
+      puts
     end
 
   end

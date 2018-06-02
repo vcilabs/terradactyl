@@ -68,12 +68,19 @@ module Terradactyl
       "<name: #{name}, path: #{path}>"
     end
 
+    def remove_plan_file
+      print_line "• Removing Plan file ..."
+      FileUtils.rm_rf @plan_path
+    end
+
     def clean
       Dir.chdir stack_path
       removals = config.cleanup.match.map { |p| Dir.glob("**/#{p}") }
       removals << %x{find . -type d -empty}.split if config.cleanup.empty
       removals.flatten.sort.uniq.each do |path|
-        FileUtils.rm_rf path, :verbose => true, :noop => true
+        print_line "• Removing: #{path}"
+        # FileUtils.rm_rf path, :noop => true
+        FileUtils.rm_rf path
       end
     end
 
@@ -106,7 +113,7 @@ module Terradactyl
       args.map!(&:to_s)
       debug(args)
       result = Open3.popen2e(ENV, *args) do |stdin, stdout_err, wait_thru|
-        puts $_ while stdout_err.gets
+        puts $_ while stdout_err.gets unless config.misc.quiet
         wait_thru.value.exitstatus
       end
       puts
