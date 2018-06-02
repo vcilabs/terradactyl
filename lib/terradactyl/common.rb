@@ -14,7 +14,7 @@ module Terradactyl
     end
 
     def terraform_path
-      Config.instance.terraform.path || %{terraform}
+      config.terraform.path || %{terraform}
     end
 
     def tag
@@ -42,14 +42,13 @@ module Terradactyl
     end
 
     def print_line(msg, color=:light_blue)
-      string = "#{msg}"
+      string = "    #{msg}"
       puts string.send(color.to_sym)
     end
 
     def print_message(msg, color=:light_blue)
-      string = "=> [#{tag}] #{msg}"
+      string = "  🥞  [#{tag}] #{msg}"
       puts string.send(color.to_sym)
-      puts "\n"
     end
 
     def print_header(msg)

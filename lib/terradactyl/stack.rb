@@ -73,7 +73,7 @@ module Terradactyl
       removals = config.cleanup.match.map { |p| Dir.glob("**/#{p}") }
       removals << %x{find . -type d -empty}.split if config.cleanup.empty
       removals.flatten.sort.uniq.each do |path|
-        FileUtils.rm_rf path
+        FileUtils.rm_rf path, :verbose => true, :noop => true
       end
     end
 
@@ -87,22 +87,32 @@ module Terradactyl
 
     def init_env_vars
       if config.misc.disable_color
-        if ENV['TF_CLI_ARGS']
-          ENV['TF_CLI_ARGS'] << ',-no-color'
-          ENV['TF_CLI_ARGS'] = args.split(',').join(',')
-        else
-          ENV['TF_CLI_ARGS'] ||= '-no-color'
+        flag = '-no-color'
+        unless (args = ENV['TF_CLI_ARGS'].to_s.split(',')).member?(flag)
+          ENV['TF_CLI_ARGS'] = [args, flag].compact.flatten.join(",")
         end
       end
     end
 
+    def debug?
+      config.misc.debug
+    end
+
+    def debug(args)
+      print_line(args) if debug?
+    end
+
     def execute(*args)
       args.map!(&:to_s)
-      Open3.popen2e(ENV, *args) do |stdin, stdout_err, wait_thru|
+      debug(args)
+      result = Open3.popen2e(ENV, *args) do |stdin, stdout_err, wait_thru|
         puts $_ while stdout_err.gets
         wait_thru.value.exitstatus
       end
+      puts
+      result
     end
+
   end
 
 end

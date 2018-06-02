@@ -10,12 +10,15 @@ module Terradactyl
 
     def initialize(filter: StacksPlanFilterDefault.new)
       @base_dir = "#{Rake.original_dir}/#{config.base_folder}"
-      @stacks   = filter.sift(stacks_all).map { |s| Stack.new(s) }
+      @stacks   = filter.sift(stacks_all)
     end
 
-    def list(formatted: false)
-      return @stacks unless formatted
-      @stacks.map(&:name)
+    def list
+      @stacks
+    end
+
+    def size
+      @stacks.size
     end
 
     def each(&block)
