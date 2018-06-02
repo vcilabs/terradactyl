@@ -35,6 +35,10 @@ module Terradactyl
       @cleanup ||= cleanup_config
     end
 
+    def misc
+      @misc ||= OpenStruct.new terradactyl.misc
+    end
+
     private
 
     def cleanup_config

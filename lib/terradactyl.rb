@@ -4,6 +4,7 @@ require 'open3'
 require 'yaml'
 require 'ostruct'
 require 'singleton'
+require 'colorize'
 
 require_relative 'terradactyl/version'
 require_relative 'terradactyl/config'
@@ -17,34 +18,6 @@ require_relative 'terradactyl/tasks'
 include Terradactyl
 include Common
 
+String.disable_colorization = config.misc.disable_color
+
 TerraformVersion.seatbelt
-
-# x = Stack.new "foo"
-# x.init
-# x.plan
-# x.apply
-
-# puts Stacks.new.list
-# puts Stacks.new(filter: StacksFilterGitDiffHead.new).list
-
-# Stacks.new.each do |stack|
-#   puts "Stack: #{stack.name}"
-#   stack.init
-#   stack.plan
-# end
-
-# Stacks.new(filter: StacksPlanFilterGitDiffHead.new).each do |stack|
-#   puts "Stack: #{stack.name}"
-#   stack.init
-#   stack.plan
-# end
-
-# Stacks.load(filter: StacksApplyFilterPrePlanned.new).each do |stack|
-#   stack.apply
-# end
-
-# Stacks.new.each do |stack|
-#   puts "Stack: #{stack.name}"
-#   stack.clean
-# end
-

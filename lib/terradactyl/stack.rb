@@ -8,6 +8,7 @@ module Terradactyl
       @stack_path = "#{@base_dir}/#{@stack_name}"
       @plan_path  = "#{@base_dir}/#{@stack_name}/#{@stack_name}.tfout"
       expand_path_vars
+      init_env_vars
     end
 
     def parallelism
@@ -37,9 +38,18 @@ module Terradactyl
 
     def apply
       Dir.chdir stack_path
-      abort "FATAL: no plan exists for stack: #{stack_name}" unless has_plan?
       execute terraform_path, :apply, '-refresh=true', "-lock=#{lock}",
         "-parallelism=#{parallelism}", plan_path
+    end
+
+    def lint
+      Dir.chdir stack_path
+      execute terraform_path, :fmt, '-list=true', "-check=true"
+    end
+
+    def fmt
+      Dir.chdir stack_path
+      execute terraform_path, :fmt
     end
 
     def name
@@ -63,7 +73,7 @@ module Terradactyl
       removals = config.cleanup.match.map { |p| Dir.glob("**/#{p}") }
       removals << %x{find . -type d -empty}.split if config.cleanup.empty
       removals.flatten.sort.uniq.each do |path|
-         FileUtils.rm_rf path
+        FileUtils.rm_rf path
       end
     end
 
@@ -73,6 +83,17 @@ module Terradactyl
 
     def expand_path_vars
       ENV['TF_PLUGIN_CACHE_DIR'] = File.expand_path(ENV['TF_PLUGIN_CACHE_DIR'])
+    end
+
+    def init_env_vars
+      if config.misc.disable_color
+        if ENV['TF_CLI_ARGS']
+          ENV['TF_CLI_ARGS'] << ',-no-color'
+          ENV['TF_CLI_ARGS'] = args.split(',').join(',')
+        else
+          ENV['TF_CLI_ARGS'] ||= '-no-color'
+        end
+      end
     end
 
     def execute(*args)

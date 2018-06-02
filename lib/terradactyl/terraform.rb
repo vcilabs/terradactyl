@@ -11,7 +11,7 @@ module Terradactyl
       include Common
 
       def current
-        raw = %x{terraform version}.match(tf_raw_semver_re)
+        raw = %x{#{terraform_path} version}.match(tf_raw_semver_re)
         Gem::Version.new raw['version']
       rescue
         nil
