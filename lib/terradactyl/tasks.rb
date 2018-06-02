@@ -8,7 +8,26 @@ module Terradactyl
 
     def install_tasks
 
-      desc "Lint an individual stack, by name"
+      task default: %w{ list }
+
+      desc 'List the stacks'
+      task :list do
+        # print_header "Listing Stacks ..."
+        print_line "Stacks:"
+        Stacks.load.list(formatted: true).each do |name|
+          print_line "  🥞  #{name}"
+        end
+      end
+
+      desc 'Plan, but only against local Git changes'
+      task :smartplan do
+        print_header "SmartPlanning Stacks ..."
+        Stacks.load(filter: StacksPlanFilterGitDiffHead.new).each do |stack|
+          print_message stack.name
+        end
+      end
+
+      desc 'Lint an individual stack, by name'
       task :lint, [:name] do |t,args|
         raise 'ERROR: No stack name specified' unless name = args[:name]
         stack = Stack.new(name)
@@ -21,7 +40,7 @@ module Terradactyl
         end
       end
 
-      desc "Format an individual stack, by name"
+      desc 'Format an individual stack, by name'
       task :fmt, [:name] do |t,args|
         raise 'ERROR: No stack name specified' unless name = args[:name]
         stack = Stack.new(name)
@@ -33,7 +52,7 @@ module Terradactyl
         end
       end
 
-      desc "Init an individual stack, by name"
+      desc 'Init an individual stack, by name'
       task :init, [:name] do |t,args|
         raise 'ERROR: No stack name specified' unless name = args[:name]
         stack = Stack.new(name)
@@ -45,7 +64,7 @@ module Terradactyl
         end
       end
 
-      desc "Plan an individual stack, by name"
+      desc 'Plan an individual stack, by name'
       task :plan, [:name] do |t,args|
         raise 'ERROR: No stack name specified' unless name = args[:name]
         stack = Stack.new(name)
@@ -62,7 +81,7 @@ module Terradactyl
         end
       end
 
-      desc "Apply an individual stack, by name"
+      desc 'Apply an individual stack, by name'
       task :apply, [:name] do |t,args|
         raise 'ERROR: No stack name specified' unless name = args[:name]
         stack = Stack.new(name)

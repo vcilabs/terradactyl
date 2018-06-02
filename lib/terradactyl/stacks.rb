@@ -13,8 +13,9 @@ module Terradactyl
       @stacks   = filter.sift(stacks_all).map { |s| Stack.new(s) }
     end
 
-    def list
-      @stacks
+    def list(formatted: false)
+      return @stacks unless formatted
+      @stacks.map(&:name)
     end
 
     def each(&block)

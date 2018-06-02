@@ -41,6 +41,11 @@ module Terradactyl
       print_message(msg, :light_yellow)
     end
 
+    def print_line(msg, color=:light_blue)
+      string = "#{msg}"
+      puts string.send(color.to_sym)
+    end
+
     def print_message(msg, color=:light_blue)
       string = "=> [#{tag}] #{msg}"
       puts string.send(color.to_sym)
