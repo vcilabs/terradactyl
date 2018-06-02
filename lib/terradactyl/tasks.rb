@@ -13,7 +13,7 @@ module Terradactyl
 
     def install_tasks
 
-      namespace :terra do |namespace|
+      namespace :terradactyl do |namespace|
 
         task default: %w{ list }
 
@@ -41,6 +41,15 @@ module Terradactyl
           end
         end
 
+        desc 'Apply any stacks that contain plan files'
+        task :smartapply do
+          print_header "SmartApplying Stacks ..."
+          scope = namespace.scope.path
+          Stacks.load(filter: StacksApplyFilterPrePlanned.new).each do |stack|
+            Rake::Task["#{scope}:apply"].execute(name: stack)
+          end
+        end
+
         desc 'Clean all stacks'
         task :cleanall do
           print_header "Cleaning All Stacks ..."
@@ -50,12 +59,12 @@ module Terradactyl
           end
         end
 
-        desc 'Apply any stacks that contain plan files'
-        task :smartapply do
-          print_header "SmartApplying Stacks ..."
+        desc 'Plan all stacks'
+        task :planall do
+          print_header "SmartPlanning Stacks ..."
           scope = namespace.scope.path
-          Stacks.load(filter: StacksPlanFilterGitDiffHead.new).each do |stack|
-            %i{init plan}.each do |op|
+          Stacks.load.each do |stack|
+            %i{clean init plan}.each do |op|
               Rake::Task["#{scope}:#{op}"].execute(name: stack)
             end
           end
@@ -115,7 +124,7 @@ module Terradactyl
         desc 'Apply an individual stack, by name'
         task :apply, [:name] do |t,args|
           stack = Stack.new(validate_name(args))
-          print_warning "Applying: #{stack.name}"
+          print_warning "Applying: #{stack.name}"; puts
           if stack.apply.zero?
             print_ok 'Changes Applied: #{stack.name}'; puts
           else
