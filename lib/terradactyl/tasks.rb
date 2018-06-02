@@ -126,7 +126,7 @@ module Terradactyl
           stack = Stack.new(validate_name(args))
           print_warning "Applying: #{stack.name}"; puts
           if stack.apply.zero?
-            print_ok "Changes Applied: #{stack.name}"; puts
+            print_ok "Applied: #{stack.name}"; puts
           else
             print_crit "Failed to apply changes: #{stack.name}"; abort
           end
