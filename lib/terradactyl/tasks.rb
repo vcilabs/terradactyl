@@ -126,7 +126,18 @@ module Terradactyl
           stack = Stack.new(validate_name(args))
           print_warning "Applying: #{stack.name}"; puts
           if stack.apply.zero?
-            print_ok 'Changes Applied: #{stack.name}'; puts
+            print_ok "Changes Applied: #{stack.name}"; puts
+          else
+            print_crit "Failed to apply changes: #{stack.name}"; abort
+          end
+        end
+
+        desc 'Apply an individual stack, by name'
+        task :destroy, [:name] do |t,args|
+          stack = Stack.new(validate_name(args))
+          print_crit "Destroying: #{stack.name}"; puts
+          if stack.destroy.zero?
+            print_warning "Destroyed: #{stack.name}"; puts
           else
             print_crit "Failed to apply changes: #{stack.name}"; abort
           end

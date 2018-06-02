@@ -42,6 +42,12 @@ module Terradactyl
         "-parallelism=#{parallelism}", plan_path
     end
 
+    def destroy
+      Dir.chdir stack_path
+      execute terraform_path, :destroy, '-refresh=true', "-lock=#{lock}",
+        "-parallelism=#{parallelism}", '-force'
+    end
+
     def lint
       Dir.chdir stack_path
       execute terraform_path, :fmt, '-list=true', "-check=true"
