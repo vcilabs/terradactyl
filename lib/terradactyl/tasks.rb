@@ -30,8 +30,19 @@ module Terradactyl
           end
         end
 
+        desc 'Plan any stacks against Git FETCH_HEAD (used for PRs)'
+        task :planpr do
+          print_header "SmartPlanning PR ..."
+          scope = namespace.scope.path
+          Stacks.load(filter: StacksPlanFilterGitDiffFetchHead.new).each do |stack|
+            %i{clean init plan}.each do |op|
+              Rake::Task["#{scope}:#{op}"].execute(name: stack)
+            end
+          end
+        end
+
         desc 'Plan any stacks that differ from Git HEAD'
-        task :smartplan, [:pr] do |t,args|
+        task :smartplan do
           print_header "SmartPlanning Stacks ..."
           scope = namespace.scope.path
           Stacks.load(filter: StacksPlanFilterGitDiffHead.new).each do |stack|

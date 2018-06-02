@@ -25,6 +25,8 @@ module Terradactyl
 
     def git_cmd
       %x{git --no-pager diff --name-only FETCH_HEAD ORIG_HEAD}
+    rescue
+      String.new
     end
 
   end
