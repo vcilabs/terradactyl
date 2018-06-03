@@ -20,6 +20,15 @@ module Terradactyl
       stacks
     end
 
+    def validate_planpr(stacks)
+      if stacks.size == 0
+        print_message "No Stacks Modified ..."
+        print_line "Skipping plan ..."
+        exit 0
+      end
+      stacks
+    end
+
     def install_tasks
 
       namespace :terradactyl do |namespace|
@@ -43,7 +52,8 @@ module Terradactyl
         task :planpr do
           print_header "SmartPlanning PR ..."
           scope = namespace.scope.path
-          Stacks.load(filter: StacksPlanFilterGitDiffFetchHead.new).each do |stack|
+          stacks = Stacks.load(filter: StacksPlanFilterGitDiffFetchHead.new)
+          validate_planpr(stacks).each do |stack|
             %i{clean init plan}.each do |op|
               Rake::Task["#{scope}:#{op}"].execute(name: stack)
             end
