@@ -1,0 +1,16 @@
+---
+terradactyl:
+  base_folder: _test
+  terraform:
+    path: terraform
+    version: 0.11.1
+    parallelism: 5
+    lock: true
+  environment:
+    AWS_REGION: us-west-2
+    TF_PLUGIN_CACHE_DIR: ~/.terraform_plugins
+    TF_CLI_ARGS: -no-color
+  misc:
+    debug: true
+    quiet: true
+    disable_color: false
