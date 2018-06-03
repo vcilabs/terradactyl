@@ -15,8 +15,12 @@ module Terradactyl
     end
 
     def sift(stacks)
-      Dir.chdir config.base_folder
-      stacks & git_cmd.split.map { |p| File.dirname(p) }.sort.uniq
+      modified = git_cmd.split.inject([]) do |memo,path|
+        parent_dir = File.dirname(path)
+        stack_name = File.basename(parent_dir)
+        memo << stack_name; memo
+      end
+      stacks & modified
     end
 
   end
