@@ -158,9 +158,7 @@ module Terradactyl
           case stack.plan
           when 0
             print_ok "No changes: #{stack.name}"
-            unless parent_tasks.include?("terradactyl:planpr")
-              stack.remove_plan_file; puts
-            end
+            stack.remove_plan_file; puts
           when 1
             print_crit "Plan failed: #{stack.name}"; abort
           when 2
