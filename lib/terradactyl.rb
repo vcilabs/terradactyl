@@ -1,4 +1,3 @@
-require 'pry'
 require 'rake'
 require 'open3'
 require 'yaml'
