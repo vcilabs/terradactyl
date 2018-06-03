@@ -104,11 +104,11 @@ module Terradactyl
         desc 'Lint an individual stack, by name'
         task :lint, [:name] do |t,args|
           stack = Stack.new(validate_name(args))
-          print_message "Linting: #{stack.name}"
+          print_ok "Linting: #{stack.name}"
           if stack.lint.zero?
             print_ok "Formatting OK: #{stack.name}"
           else
-            print_warning "Formatting Required: #{stack.name}"
+            print_warning "Bad Formatting: #{stack.name}"
             abort
           end
         end
