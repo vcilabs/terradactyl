@@ -11,6 +11,14 @@ module Terradactyl
       name
     end
 
+    def validate_smartplan(stacks)
+      if stacks.size == 0
+        print_message "No Stacks Modified ..."
+        print_line "Did you forget to `git add` your selected changes?"
+      end
+      stacks
+    end
+
     def install_tasks
 
       namespace :terradactyl do |namespace|
@@ -45,7 +53,8 @@ module Terradactyl
         task :smartplan do
           print_header "SmartPlanning Stacks ..."
           scope = namespace.scope.path
-          Stacks.load(filter: StacksPlanFilterGitDiffHead.new).each do |stack|
+          stacks = Stacks.load(filter: StacksPlanFilterGitDiffHead.new)
+          validate_smartplan(stacks).each do |stack|
             %i{clean init plan}.each do |op|
               Rake::Task["#{scope}:#{op}"].execute(name: stack)
             end
