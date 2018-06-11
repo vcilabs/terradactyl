@@ -169,6 +169,17 @@ module Terradactyl
           end
         end
 
+        # desc 'Refresh state on an individual stack, by name'
+        task :refresh, [:name] do |t,args|
+          stack = Stack.new(validate_name(args))
+          print_crit "Refreshing: #{stack.name}"; puts
+          if stack.refresh.zero?
+            print_warning "Refreshed: #{stack.name}"; puts
+          else
+            print_crit "Failed to refresh stack: #{stack.name}"; abort
+          end
+        end
+
         # desc 'Apply an individual stack, by name'
         task :destroy, [:name] do |t,args|
           stack = Stack.new(validate_name(args))
