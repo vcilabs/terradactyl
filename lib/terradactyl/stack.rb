@@ -42,6 +42,11 @@ module Terradactyl
         "-parallelism=#{parallelism}", plan_path
     end
 
+    def refresh
+      Dir.chdir stack_path
+      execute terraform_path, :refresh, '-input=false', "-lock=#{lock}"
+    end
+
     def destroy
       Dir.chdir stack_path
       execute terraform_path, :destroy, '-refresh=true', "-lock=#{lock}",
