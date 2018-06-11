@@ -29,6 +29,14 @@ module Terradactyl
       COLUMN_WIDTH / 2
     end
 
+    def dot_icon
+      config.misc.utf8 ? "•" : "*"
+    end
+
+    def stack_icon
+      config.misc.utf8 ? "  🥞  " : "  |||  "
+    end
+
     def print_crit(msg)
       print_message(msg, :light_red)
     end
@@ -41,13 +49,18 @@ module Terradactyl
       print_message(msg, :light_yellow)
     end
 
+    def print_dot(msg, color=:light_blue)
+      string = "     #{dot_icon} #{msg}"
+      puts string.send(color.to_sym)
+    end
+
     def print_line(msg, color=:light_blue)
       string = "     #{msg}"
       puts string.send(color.to_sym)
     end
 
     def print_message(msg, color=:light_blue)
-      string = "  🥞  [#{tag}] #{msg}"
+      string = "#{stack_icon}[#{tag}] #{msg}"
       puts string.send(color.to_sym)
     end
 

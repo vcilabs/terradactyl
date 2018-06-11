@@ -48,7 +48,7 @@ module Terradactyl
         task :list do
           print_ok "Stacks:"
           Stacks.load.each do |stack|
-            print_line "• #{stack}"
+            print_dot "#{stack}"
           end
         end
 
