@@ -85,6 +85,15 @@ module Terradactyl
           end
         end
 
+        # desc 'Refresh any stacks that contain plan files (used for PRs)'
+        task :smartrefresh do
+          print_header "SmartRefreshing Stacks ..."
+          scope = namespace.scope.path
+          Stacks.load(filter: StacksApplyFilterPrePlanned.new).each do |stack|
+            Rake::Task["#{scope}:refresh"].execute(name: stack)
+          end
+        end
+
         desc 'Clean all stacks'
         task :cleanall do
           print_header "Cleaning All Stacks ..."
