@@ -114,6 +114,18 @@ module Terradactyl
           end
         end
 
+        desc 'Audit all stacks'
+        task :auditall do
+          print_header "Auditing ALL Stacks ..."
+          scope = namespace.scope.path
+          Stacks.load.each do |stack|
+            %i{clean init plan}.each do |op|
+              Rake::Task["#{scope}:#{op}"].execute(name: stack)
+            end
+          end
+          abort if Stacks.dirty?
+        end
+
         desc 'Lint an individual stack, by name'
         task :lint, [:name] do |t,args|
           stack = Stack.new(validate_name(args))
@@ -169,9 +181,10 @@ module Terradactyl
         desc 'Audit an individual stack, by name'
         task :audit, [:name] do |t,args|
           scope = namespace.scope.path
-          Rake::Task["#{scope}:plan"].execute(name: args[:name])
+          stack = args[:name]
+          Rake::Task["#{scope}:plan"].execute(name: stack)
           if Stacks.dirty?
-            print_crit "Dirty stack: #{args[:name]}"; puts
+            print_crit "Dirty stack: #{stack}"; puts
             abort
           end
         end
