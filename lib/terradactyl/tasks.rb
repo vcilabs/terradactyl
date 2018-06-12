@@ -203,7 +203,7 @@ module Terradactyl
         desc 'Clean an individual stack, by name'
         task :clean, [:name] do |t,args|
           stack = Stack.new(validate_name(args))
-          print_warning "Cleaning: #{stack.name}"
+          print_warning "Cleaning: #{stack.name}"; puts
           stack.clean
           print_ok "Cleaned: #{stack.name}"; puts
         end

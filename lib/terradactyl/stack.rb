@@ -80,7 +80,8 @@ module Terradactyl
     end
 
     def remove_plan_file
-      print_dot "Removing Plan File: #{File.basename(@plan_path)}"
+      print_dot "Removing Plan File: #{File.basename(@plan_path)}",
+        color=:light_yellow
       FileUtils.rm_rf @plan_path
     end
 
@@ -99,7 +100,7 @@ module Terradactyl
       removals = config.cleanup.match.map { |p| Dir.glob("**/#{p}") }
       removals << %x{find . -type d -empty}.split if config.cleanup.empty
       removals.flatten.sort.uniq.each do |path|
-        print_dot "Removing: #{path}"
+        print_dot "Removing: #{path}", color=:light_yellow
         FileUtils.rm_rf path
       end
       puts
