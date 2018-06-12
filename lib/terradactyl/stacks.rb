@@ -2,6 +2,18 @@ module Terradactyl
 
   class Stacks
 
+    class << self
+
+      def dirty
+        @@dirty = true
+      end
+
+      def dirty?
+        @@dirty
+      end
+
+    end
+
     include Enumerable
 
     def self.load(*args)
