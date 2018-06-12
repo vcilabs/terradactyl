@@ -87,7 +87,9 @@ module Terradactyl
     def show_plan_file
       if config.misc.quiet
         config.misc.quiet = false
-        execute terraform_path, :show, plan_path
+        plan = TerraformPlan.load(plan_path)
+        print_content(plan.to_s);puts
+        print_content(plan.summary);puts
         config.misc.quiet = true
       end
     end
