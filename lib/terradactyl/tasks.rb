@@ -154,9 +154,7 @@ module Terradactyl
           print_ok "Planning: #{stack.name}"; puts
           case stack.plan
           when 0
-            print_ok "No changes: #{stack.name}"
-            # stack.remove_plan_file
-            puts
+            print_ok "No changes: #{stack.name}"; puts
           when 1
             print_crit "Plan failed: #{stack.name}"; abort
           when 2
