@@ -28,7 +28,7 @@ module Terradactyl
     private
 
     def paths
-      Dir.glob("#{@base_dir}/**/*.tf")
+      Dir.glob("#{@base_dir}/*/*.tf")
     end
 
     def stacks_all
