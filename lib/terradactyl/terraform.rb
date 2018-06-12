@@ -1,5 +1,73 @@
 module Terradactyl
 
+  class TerraformPlan
+
+    attr_reader :data, :summary, :file_name, :stack_name
+
+    def self.load(plan_path)
+      new plan_path
+    end
+
+    def initialize(plan_path)
+      @add, @change, @destroy = 0, 0, 0
+      @file_name              = File.basename(plan_path)
+      @stack_name             = File.basename(plan_path, '.tfout')
+      @data                   = read_plan(plan_path)
+      @summary                = generate_summary
+    end
+
+    def checksum
+      Digest::SHA1.hexdigest data
+    end
+
+    def to_markdown(base_folder=nil)
+      [
+        "**#{[base_folder, stack_name].compact.join('/')}**",
+        '```',
+        data,
+        "  #{summary}",
+        '```',
+      ].compact.join("\n")
+    end
+
+    def <=>(other)
+      self.data <=> other.data
+    end
+
+    def to_s
+      @data
+    end
+
+    private
+
+    def read_plan(plan_path)
+      output = %x{terraform show -no-color #{plan_path}}
+      raise 'Error reading plan file!' unless $?.success?
+      output
+    end
+
+    def generate_summary
+      template = "Plan: %i to add, %i to change, %i to destroy."
+      @data.each_line do |line|
+        if cap = line.match(/^\s{0,2}(?<op>[+-~])\s/)
+          case cap['op']
+          when '+'
+            @add += 1
+          when '~'
+            @change += 1
+          when '-'
+            @destroy += 1
+          end
+        end
+      end
+      if [@add, @change, @destroy].reduce(&:+).zero?
+        return 'No changes. Infrastructure is up-to-date.'
+      end
+      template % [@add, @change, @destroy]
+    end
+
+  end
+
   class TerraformVersion
 
     class << self
