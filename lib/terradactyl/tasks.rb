@@ -105,7 +105,7 @@ module Terradactyl
 
         desc 'Plan all stacks'
         task :planall do
-          print_header "SmartPlanning Stacks ..."
+          print_header "Planning ALL Stacks ..."
           scope = namespace.scope.path
           Stacks.load.each do |stack|
             %i{clean init plan}.each do |op|
