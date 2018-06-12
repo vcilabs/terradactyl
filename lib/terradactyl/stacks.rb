@@ -4,6 +4,8 @@ module Terradactyl
 
     class << self
 
+      @@dirty = false
+
       def dirty
         @@dirty = true
       end
