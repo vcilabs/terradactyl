@@ -54,6 +54,12 @@ module Terradactyl
       puts string.send(color.to_sym)
     end
 
+    def print_content(content)
+      content.split("\n").each do |line|
+        print_line line
+      end
+    end
+
     def print_line(msg, color=:light_blue)
       string = "     #{msg}"
       puts string.send(color.to_sym)
