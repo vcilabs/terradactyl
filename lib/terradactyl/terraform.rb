@@ -41,7 +41,7 @@ module Terradactyl
     private
 
     def read_plan(plan_path)
-      output = %x{terraform show -no-color #{plan_path}}
+      output = %x{TF_CLI_ARGS='' terraform show -no-color #{plan_path}}
       raise 'Error reading plan file!' unless $?.success?
       output
     end

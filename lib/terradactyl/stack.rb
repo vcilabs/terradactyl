@@ -21,8 +21,9 @@ module Terradactyl
 
     def init
       Dir.chdir stack_path
-      execute terraform_path, :init, '-backend=true', "-lock=#{lock}",
+      result = execute terraform_path, :init, '-backend=true', "-lock=#{lock}",
         '-get=true', '-get-plugins=true', '-input=false', '-force-copy'
+      puts; result
     end
 
     def plan
@@ -99,11 +100,11 @@ module Terradactyl
       Dir.chdir stack_path
       removals = config.cleanup.match.map { |p| Dir.glob("**/#{p}") }
       removals << %x{find . -type d -empty}.split if config.cleanup.empty
-      removals.flatten.sort.uniq.each do |path|
+      removals = removals.flatten.sort.uniq.each do |path|
         print_dot "Removing: #{path}", color=:light_yellow
         FileUtils.rm_rf path
       end
-      puts
+      puts unless removals.empty?
     end
 
     private
@@ -139,7 +140,6 @@ module Terradactyl
         puts $_ while stderr.gets
         wait_thru.value.exitstatus
       end
-      puts
       result
     end
 

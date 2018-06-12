@@ -2,6 +2,20 @@ module Terradactyl
 
   class Stacks
 
+    class << self
+
+      @@dirty = false
+
+      def dirty
+        @@dirty = true
+      end
+
+      def dirty?
+        @@dirty
+      end
+
+    end
+
     include Enumerable
 
     def self.load(*args)
@@ -28,7 +42,7 @@ module Terradactyl
     private
 
     def paths
-      Dir.glob("#{@base_dir}/**/*.tf")
+      Dir.glob("#{@base_dir}/*/*.tf")
     end
 
     def stacks_all

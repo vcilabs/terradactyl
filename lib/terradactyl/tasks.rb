@@ -105,13 +105,25 @@ module Terradactyl
 
         desc 'Plan all stacks'
         task :planall do
-          print_header "SmartPlanning Stacks ..."
+          print_header "Planning ALL Stacks ..."
           scope = namespace.scope.path
           Stacks.load.each do |stack|
             %i{clean init plan}.each do |op|
               Rake::Task["#{scope}:#{op}"].execute(name: stack)
             end
           end
+        end
+
+        desc 'Audit all stacks'
+        task :auditall do
+          print_header "Auditing ALL Stacks ..."
+          scope = namespace.scope.path
+          Stacks.load.each do |stack|
+            %i{clean init plan}.each do |op|
+              Rake::Task["#{scope}:#{op}"].execute(name: stack)
+            end
+          end
+          abort if Stacks.dirty?
         end
 
         desc 'Lint an individual stack, by name'
@@ -154,16 +166,26 @@ module Terradactyl
           print_ok "Planning: #{stack.name}"; puts
           case stack.plan
           when 0
-            print_ok "No changes: #{stack.name}"
-            # stack.remove_plan_file
-            puts
+            print_ok "No changes: #{stack.name}"; puts
           when 1
             print_crit "Plan failed: #{stack.name}"; abort
           when 2
+            Stacks.dirty
             print_warning "Changes detected: #{stack.name}"; puts
             stack.show_plan_file
           else
             fail
+          end
+        end
+
+        desc 'Audit an individual stack, by name'
+        task :audit, [:name] do |t,args|
+          scope = namespace.scope.path
+          stack = args[:name]
+          Rake::Task["#{scope}:plan"].execute(name: stack)
+          if Stacks.dirty?
+            print_crit "Dirty stack: #{stack}"; puts
+            abort
           end
         end
 
