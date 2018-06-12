@@ -158,10 +158,21 @@ module Terradactyl
           when 1
             print_crit "Plan failed: #{stack.name}"; abort
           when 2
+            Stacks.dirty
             print_warning "Changes detected: #{stack.name}"; puts
             stack.show_plan_file
           else
             fail
+          end
+        end
+
+        desc 'Audit an individual stack, by name'
+        task :audit, [:name] do |t,args|
+          scope = namespace.scope.path
+          Rake::Task["#{scope}:plan"].execute(name: args[:name])
+          if Stacks.dirty?
+            print_crit "Dirty stack: #{args[:name]}"; puts
+            abort
           end
         end
 
