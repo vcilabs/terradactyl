@@ -49,13 +49,16 @@ module Terradactyl
     def generate_summary
       template = "Plan: %i to add, %i to change, %i to destroy."
       @data.each_line do |line|
-        if cap = line.match(/^\s{0,2}(?<op>[+-~])\s/)
+        if cap = line.match(/^\s{0,2}(?<op>(?:[+-~]|-\/\+))\s/)
           case cap['op']
           when '+'
             @add += 1
           when '~'
             @change += 1
           when '-'
+            @destroy += 1
+          when '-/+'
+            @add += 1
             @destroy += 1
           end
         end
