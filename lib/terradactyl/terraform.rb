@@ -17,7 +17,7 @@ module Terradactyl
     end
 
     def checksum
-      Digest::SHA1.hexdigest data
+      Digest::SHA1.hexdigest normalize(data)
     end
 
     def to_markdown(base_folder=nil)
@@ -30,15 +30,38 @@ module Terradactyl
       ].compact.join("\n")
     end
 
-    def <=>(other)
-      self.data <=> other.data
-    end
-
     def to_s
       @data
     end
 
+    def <=>(other)
+      self.data <=> other.data
+    end
+
+    def normalized
+      normalize(data)
+    end
+
     private
+
+    def normalize(data)
+      lines = data.split("\n").inject([]) do |memo,line|
+        memo << normalize_json(line); memo
+      end
+      lines.join("\n")
+    end
+
+    def normalize_json(line)
+      re_json = /^(?<attrib>\s+\w+:\s+)(?<json>\"{.*)/
+      if caps = line.match(re_json)
+        caps['json'].split(' => ').each do |blob|
+          un_esc = %x{echo #{blob}}.chomp
+          normal = JSON.parse(un_esc).deep_sort.to_json.inspect
+          line   = [caps['attrib'], %{#{normal}}].join
+        end
+      end
+      line
+    end
 
     def read_plan(plan_path)
       output = %x{TF_CLI_ARGS='' terraform show -no-color #{plan_path}}
