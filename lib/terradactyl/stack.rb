@@ -28,8 +28,8 @@ module Terradactyl
 
     def plan
       Dir.chdir stack_path
-      execute terraform_path, :plan, '-refresh=true', "-lock=#{lock}",
-        '-detailed-exitcode', "-parallelism=#{parallelism}", "-out=#{plan_path}"
+      execute terraform_path, :plan, '-refresh=true', '-detailed-exitcode',
+        "-parallelism=#{parallelism}", "-out=#{plan_path}"
     end
 
     def has_plan?
