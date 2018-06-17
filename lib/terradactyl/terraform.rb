@@ -59,7 +59,7 @@ module Terradactyl
       re_json = /^(?<attrib>\s+\w+:\s+)(?<json>\"{.*)/
       if caps = line.match(re_json)
         caps['json'].split(' => ').each do |blob|
-          un_esc = %x{echo #{blob}}.chomp
+          un_esc = eval(blob).chomp
           normal = JSON.parse(un_esc).deep_sort.to_json.inspect
           line   = [caps['attrib'], %{#{normal}}].join
         end
