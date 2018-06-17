@@ -56,7 +56,7 @@ module Terradactyl
         task :planpr do
           print_header "SmartPlanning PR ..."
           scope = namespace.scope.path
-          stacks = Stacks.load(filter: StacksPlanFilterGitDiffFetchHead.new)
+          stacks = Stacks.load(filter: StacksPlanFilterGitDiffOriginBranch.new)
           validate_planpr(stacks).each do |stack|
             %i{clean init plan}.each do |op|
               Rake::Task["#{scope}:#{op}"].execute(name: stack)

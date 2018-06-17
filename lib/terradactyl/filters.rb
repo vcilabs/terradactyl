@@ -35,6 +35,20 @@ module Terradactyl
 
   end
 
+  class StacksPlanFilterGitDiffOriginBranch < StacksPlanFilterGitDiffHead
+
+    def current_branch
+      %x{git symbolic-ref -q --short HEAD}
+    end
+
+    def git_cmd
+      %x{git --no-pager diff --name-only origin/#{current_branch}}
+    rescue
+      String.new
+    end
+
+  end
+
   class StacksApplyFilterDefault < StacksPlanFilterDefault
   end
 
