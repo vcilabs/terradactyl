@@ -2,13 +2,21 @@ module Terradactyl
 
   class StacksPlanFilterDefault
 
+    def base_dir
+      config.base_folder
+    end
+
+    def stack_name(path)
+      path.split('/')[1]
+    end
+
     def sift(stacks)
       stacks
     end
 
   end
 
-  class StacksPlanFilterGitDiffHead
+  class StacksPlanFilterGitDiffHead < StacksPlanFilterDefault
 
     def git_cmd
       %x{git --no-pager diff --name-only HEAD}
@@ -16,9 +24,8 @@ module Terradactyl
 
     def sift(stacks)
       modified = git_cmd.split.inject([]) do |memo,path|
-        parent_dir = File.dirname(path)
-        stack_name = File.basename(parent_dir)
-        memo << stack_name; memo
+        memo << stack_name(path) if path =~ /#{base_dir}/
+        memo
       end
       stacks & modified
     end
