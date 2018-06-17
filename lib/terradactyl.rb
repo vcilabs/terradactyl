@@ -4,6 +4,7 @@ require 'yaml'
 require 'ostruct'
 require 'singleton'
 require 'colorize'
+require 'deepsort'
 
 require_relative 'terradactyl/version'
 require_relative 'terradactyl/config'

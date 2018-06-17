@@ -42,6 +42,10 @@ module Terradactyl
       normalize(data)
     end
 
+    def modified?
+      @modified ||= ! [@add, @change, @destroy].reduce(&:+).zero?
+    end
+
     private
 
     def normalize(data)
@@ -86,9 +90,7 @@ module Terradactyl
           end
         end
       end
-      if [@add, @change, @destroy].reduce(&:+).zero?
-        return 'No changes. Infrastructure is up-to-date.'
-      end
+      return 'No changes. Infrastructure is up-to-date.' if modified?
       template % [@add, @change, @destroy]
     end
 
