@@ -90,7 +90,7 @@ module Terradactyl
           end
         end
       end
-      return 'No changes. Infrastructure is up-to-date.' if modified?
+      return 'No changes. Infrastructure is up-to-date.' unless modified?
       template % [@add, @change, @destroy]
     end
 
