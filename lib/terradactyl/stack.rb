@@ -21,8 +21,8 @@ module Terradactyl
 
     def init
       Dir.chdir stack_path
-      result = execute terraform_path, :init, '-backend=true', "-lock=#{lock}",
-        '-get=true', '-get-plugins=true', '-input=false', '-force-copy'
+      result = execute terraform_path, :init, '-backend=true', '-get=true',
+        '-get-plugins=true', '-input=false', '-force-copy'
       puts; result
     end
 
