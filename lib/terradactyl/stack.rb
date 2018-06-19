@@ -16,20 +16,21 @@ module Terradactyl
     end
 
     def lock
-      @lock ||= config.terraform.lock
+      op = caller_locations(1,1)[0].label
+      @lock ||= (config.terraform.lock[op] rescue true)
     end
 
     def init
       Dir.chdir stack_path
-      result = execute terraform_path, :init, '-backend=true', '-get=true',
-        '-get-plugins=true', '-input=false', '-force-copy'
+      result = execute terraform_path, :init, '-backend=true', "-lock=#{lock}",
+        '-get=true', '-get-plugins=true', '-input=false', '-force-copy'
       puts; result
     end
 
     def plan
       Dir.chdir stack_path
-      execute terraform_path, :plan, '-refresh=true', '-detailed-exitcode',
-        "-parallelism=#{parallelism}", "-out=#{plan_path}"
+      execute terraform_path, :plan, '-refresh=true', "-lock=#{lock}",
+        '-detailed-exitcode', "-parallelism=#{parallelism}", "-out=#{plan_path}"
     end
 
     def has_plan?
