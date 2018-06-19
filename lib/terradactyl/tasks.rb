@@ -19,7 +19,6 @@ module Terradactyl
       if stacks.size == 0
         print_message "No Stacks Modified ..."
         print_line "Did you forget to `git add` your selected changes?"
-        abort
       end
       stacks
     end
