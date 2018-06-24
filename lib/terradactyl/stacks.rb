@@ -6,7 +6,7 @@ module Terradactyl
 
       @@dirty = false
 
-      def dirty
+      def dirty!
         @@dirty = true
       end
 
