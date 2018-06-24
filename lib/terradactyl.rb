@@ -1,3 +1,4 @@
+require 'thor'
 require 'rake'
 require 'open3'
 require 'yaml'
@@ -13,7 +14,7 @@ require_relative 'terradactyl/terraform'
 require_relative 'terradactyl/stack'
 require_relative 'terradactyl/stacks'
 require_relative 'terradactyl/filters'
-require_relative 'terradactyl/tasks'
+require_relative 'terradactyl/cli'
 
 include Terradactyl
 include Common
