@@ -2,7 +2,7 @@ module Terradactyl
 
   class TerraformPlan
 
-    attr_reader :data, :summary, :file_name, :stack_name
+    attr_reader :data, :summary, :file_name, :base_folder, :stack_name
 
     def self.load(plan_path)
       new plan_path
@@ -12,6 +12,7 @@ module Terradactyl
       @add, @change, @destroy = 0, 0, 0
       @file_name              = File.basename(plan_path)
       @stack_name             = File.basename(plan_path, '.tfout')
+      @base_folder            = File.dirname(plan_path).split('/')[-2]
       @data                   = read_plan(plan_path)
       @summary                = generate_summary
     end
@@ -50,19 +51,32 @@ module Terradactyl
 
     def normalize(data)
       lines = data.split("\n").inject([]) do |memo,line|
-        memo << normalize_json(line); memo
+        memo << normalize_line(line); memo
       end
       lines.join("\n")
     end
 
-    def normalize_json(line)
-      re_json = /^(?<attrib>\s+\w+:\s+)(?<json>\"{.*)/
-      if caps = line.match(re_json)
-        caps['json'].split(' => ').each do |blob|
-          un_esc = eval(blob).chomp
-          normal = JSON.parse(un_esc).deep_sort.to_json.inspect
-          line   = [caps['attrib'], %{#{normal}}].join
-        end
+    def re_json_blob
+      /\"{\\n.+?\\n}\"/
+    end
+
+    def re_json_line
+      /^(?<attrib>\s+\w+:\s+)(?<json>.+?#{re_json_blob}.*)/
+    end
+
+    def normalize_json(blob)
+      if blob.match(re_json_blob)
+        un_esc = eval(blob).chomp
+        return JSON.parse(un_esc).deep_sort.to_json.inspect
+      end
+      blob
+    end
+
+    def normalize_line(line)
+      if caps = line.match(re_json_line)
+        blobs = caps['json'].split(' => ').map { |blob| normalize_json(blob) }
+        blobs = blobs.join(' => ')
+        line  = [caps['attrib'], %{#{blobs}}].join
       end
       line
     end
