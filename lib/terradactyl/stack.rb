@@ -137,7 +137,9 @@ module Terradactyl
       args.map!(&:to_s)
       debug(args)
       result = Open3.popen3(ENV, *args) do |stdin, stdout, stderr, wait_thru|
-        puts $_ while stdout.gets unless config.misc.quiet
+        while stdout.gets
+          puts $_ unless config.misc.quiet
+        end
         puts $_ while stderr.gets
         wait_thru.value.exitstatus
       end
