@@ -121,7 +121,11 @@ module Terradactyl
       Stacks.load.each do |stack|
         clean(stack)
         init(stack)
-        audit(stack)
+        begin
+          audit(stack)
+        rescue Exception => e
+          nil
+        end
       end
       abort if Stacks.dirty?
     end

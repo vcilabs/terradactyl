@@ -1,6 +1,6 @@
 # Terradactyl
 
-Gem that provides some useful Rake tasks for managing a Terraform mono-repo.
+Gem that provides a useful CLI interface for managing a Terraform mono-repo.
 
 ## Installation
 
@@ -45,7 +45,7 @@ Example:
 
 For a list of available tasks do:
 
-    bundle exec rake -T
+    terradactyl help
 
 ## Contributing
 
