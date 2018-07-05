@@ -127,7 +127,7 @@ module Terradactyl
           nil
         end
       end
-      abort if Stacks.dirty?
+      abort unless Stacks.clean?
     end
 
     #################################################################
@@ -179,7 +179,7 @@ module Terradactyl
       when 1
         print_crit "Plan failed: #{stack.name}"; abort
       when 2
-        Stacks.dirty!
+        Stacks.dirty!(stack.name)
         print_warning "Changes detected: #{stack.name}"; puts
         stack.show_plan_file
       else
@@ -190,7 +190,7 @@ module Terradactyl
     desc 'audit NAME', 'Audit an individual stack, by name'
     def audit(name)
       plan(name)
-      if Stacks.dirty?
+      if Stacks.dirty?(name)
         print_crit "Dirty stack: #{name}"; puts
         abort
       end
