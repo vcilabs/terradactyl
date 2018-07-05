@@ -4,14 +4,18 @@ module Terradactyl
 
     class << self
 
-      @@dirty = false
+      @@dirty = []
 
-      def dirty!
-        @@dirty = true
+      def dirty!(stack)
+        @@dirty << stack
       end
 
-      def dirty?
-        @@dirty
+      def dirty?(stack)
+        @@dirty.member? stack
+      end
+
+      def clean?
+        @@dirty.empty?
       end
 
     end
