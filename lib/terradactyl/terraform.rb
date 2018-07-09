@@ -23,7 +23,7 @@ module Terradactyl
 
     def to_markdown(base_folder=nil)
       [
-        "**#{[base_folder, stack_name].compact.join('/')}**",
+        "#### #{[base_folder, stack_name].compact.join('/')}",
         '```',
         data,
         "  #{summary}",
