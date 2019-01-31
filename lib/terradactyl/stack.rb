@@ -3,7 +3,7 @@ module Terradactyl
   class Stack
 
     def initialize(stack_name)
-      @stack_name = stack_name
+      @stack_name = validate stack_name.split('/').last
       @base_dir   = "#{Rake.original_dir}/#{config.base_folder}"
       @stack_path = "#{@base_dir}/#{@stack_name}"
       @plan_path  = "#{@base_dir}/#{@stack_name}/#{@stack_name}.tfout"
@@ -111,6 +111,14 @@ module Terradactyl
     private
 
     attr_reader :stack_name, :base_dir, :stack_path, :plan_path
+
+    def validate(stack_name)
+      unless Stacks.validate(stack_name)
+        print_crit "Stack not found: #{stack_name}"; puts
+        abort
+      end
+      stack_name
+    end
 
     def expand_path_vars
       ENV['TF_PLUGIN_CACHE_DIR'] = File.expand_path(ENV['TF_PLUGIN_CACHE_DIR'])

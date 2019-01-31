@@ -9,8 +9,8 @@ Gem::Specification.new do |spec|
   spec.authors       = ["Brian Warsing"]
   spec.email         = ["brian.warsing@visioncritical.com"]
 
-  spec.summary       = %{Manage a Terraform mono-repo}
-  spec.description   = %{Provides facility to manage a large Terraform mono-repo}
+  spec.summary       = %{Manage a Terraform monorepo}
+  spec.description   = %{Provides facility to manage a large Terraform monorepo}
   spec.homepage      = %{https://git.vcilabs.com/CloudEng/terradactyl}
 
   if spec.respond_to?(:metadata)

@@ -2,11 +2,22 @@ module Terradactyl
 
   class CLI < Thor
 
+    def initialize(*args)
+      # Hook ensures we exit non-zero when ridin' dirty
+      at_exit { abort unless Stacks.clean? }
+      super
+    end
+
     no_commands {
+
+      # Monkey-patch Thor internal method to break out of nested calls
+      def invoke_command(command, *args)
+        catch(:error) { super }
+      end
 
       def validate_smartplan(stacks)
         if stacks.size == 0
-          print_message "No Stacks Modified ..."
+          print_message "No Stacks Modified ..."; puts
           print_line "Did you forget to `git add` your selected changes?"
         end
         stacks
@@ -14,9 +25,8 @@ module Terradactyl
 
       def validate_planpr(stacks)
         if stacks.size == 0
-          print_message "No Stacks Modified ..."
+          print_message "No Stacks Modified ..."; puts
           print_line "Skipping plan ..."
-          exit 0
         end
         stacks
       end
@@ -109,9 +119,11 @@ module Terradactyl
     def planall
       print_header "Planning ALL Stacks ..."
       Stacks.load.each do |stack|
-        clean(stack)
-        init(stack)
-        plan(stack)
+        catch(:error) do
+          clean(stack)
+          init(stack)
+          plan(stack)
+        end
       end
     end
 
@@ -119,15 +131,12 @@ module Terradactyl
     def auditall
       print_header "Auditing ALL Stacks ..."
       Stacks.load.each do |stack|
-        clean(stack)
-        init(stack)
-        begin
+        catch(:error) do
+          clean(stack)
+          init(stack)
           audit(stack)
-        rescue Exception => e
-          nil
         end
       end
-      abort unless Stacks.clean?
     end
 
     #################################################################
@@ -142,8 +151,8 @@ module Terradactyl
       if stack.lint.zero?
         print_ok "Formatting OK: #{stack.name}"
       else
-        print_warning "Bad Formatting: #{stack.name}"
-        abort
+        Stacks.dirty!(stack.name)
+        print_warning "Bad Formatting: #{stack.name}"; puts
       end
     end
 
@@ -154,6 +163,7 @@ module Terradactyl
       if stack.fmt.zero?
         print_ok "Formatted: #{stack.name}"
       else
+        Stacks.dirty!(stack.name)
         print_crit "Formatting failed: #{stack.name}"
       end
     end
@@ -165,7 +175,9 @@ module Terradactyl
       if stack.init.zero?
         print_ok "Initialized: #{stack.name}"; puts
       else
-        print_crit "Initialization failed: #{stack.name}"; abort
+        Stacks.dirty!(stack.name)
+        print_crit "Initialization failed: #{stack.name}"; puts
+        throw :error
       end
     end
 
@@ -177,7 +189,9 @@ module Terradactyl
       when 0
         print_ok "No changes: #{stack.name}"; puts
       when 1
-        print_crit "Plan failed: #{stack.name}"; abort
+        Stacks.dirty!(stack.name)
+        print_crit "Plan failed: #{stack.name}"; puts
+        throw :error
       when 2
         Stacks.dirty!(stack.name)
         print_warning "Changes detected: #{stack.name}"; puts
@@ -192,7 +206,6 @@ module Terradactyl
       plan(name)
       if Stacks.dirty?(name)
         print_crit "Dirty stack: #{name}"; puts
-        abort
       end
     end
 
@@ -217,7 +230,8 @@ module Terradactyl
       if stack.apply.zero?
         print_ok "Applied: #{stack.name}"; puts
       else
-        print_crit "Failed to apply changes: #{stack.name}"; abort
+        Stacks.dirty!(stack.name)
+        print_crit "Failed to apply changes: #{stack.name}"; puts
       end
     end
 
@@ -228,7 +242,8 @@ module Terradactyl
       if stack.refresh.zero?
         print_warning "Refreshed: #{stack.name}"; puts
       else
-        print_crit "Failed to refresh stack: #{stack.name}"; abort
+        Stacks.dirty!(stack.name)
+        print_crit "Failed to refresh stack: #{stack.name}"; puts
       end
     end
 
@@ -239,7 +254,8 @@ module Terradactyl
       if stack.destroy.zero?
         print_warning "Destroyed: #{stack.name}"; puts
       else
-        print_crit "Failed to apply changes: #{stack.name}"; abort
+        Stacks.dirty!(stack.name)
+        print_crit "Failed to apply changes: #{stack.name}"; puts
       end
     end
 
