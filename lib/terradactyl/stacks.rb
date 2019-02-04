@@ -22,6 +22,10 @@ module Terradactyl
 
     include Enumerable
 
+    def self.validate(stack)
+      new.validate(stack)
+    end
+
     def self.load(*args)
       new *args
     end
@@ -33,6 +37,10 @@ module Terradactyl
 
     def list
       @stacks
+    end
+
+    def validate(stack_name)
+      @stacks.member? stack_name
     end
 
     def size

@@ -1,6 +1,6 @@
 # Terradactyl
 
-Gem that provides a useful CLI interface for managing a Terraform mono-repo.
+Gem that provides a useful CLI interface for managing a Terraform monorepo.
 
 ## Installation
 
