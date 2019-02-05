@@ -5,17 +5,24 @@ module Terradactyl
     class << self
 
       @@dirty = []
+      @@error = []
+
+      def error!(stack)
+        @@error << stack
+      end
+
+      def error?(stack=nil)
+        return @@error.member?(stack) if stack
+        @@error.any?
+      end
 
       def dirty!(stack)
         @@dirty << stack
       end
 
-      def dirty?(stack)
-        @@dirty.member? stack
-      end
-
-      def clean?
-        @@dirty.empty?
+      def dirty?(stack=nil)
+        return @@dirty.member?(stack) if stack
+        @@dirty.any?
       end
 
     end
