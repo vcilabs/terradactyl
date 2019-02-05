@@ -31,6 +31,15 @@ module Terradactyl
         stacks
       end
 
+      def generate_report(report)
+        data_file = "#{config.base_folder}.audit.json"
+        print_warning "Writing Report: #{data_file} ..."; puts
+        report[:error] = Stacks.error.map { |s| "#{config.base_folder}/#{s.name}" }.sort
+        Dir.chdir Rake.original_dir
+        File.write data_file, JSON.pretty_generate(report)
+        print_ok "Done!"; puts
+      end
+
     }
 
     #################################################################
@@ -128,7 +137,10 @@ module Terradactyl
     end
 
     desc 'auditall', 'Audit all stacks'
+    options report: :optional
+    method_option :report, :type => :boolean
     def auditall
+      report = { start: Time.now.to_json }
       print_header "Auditing ALL Stacks ..."
       Stacks.load.each do |stack|
         catch(:error) do
@@ -136,6 +148,11 @@ module Terradactyl
           init(stack)
           audit(stack)
         end
+      end
+      report[:finish] = Time.now.to_json
+      if options[:report]
+        print_header "Audit Report ..."
+        generate_report(report)
       end
     end
 
@@ -151,7 +168,7 @@ module Terradactyl
       if stack.lint.zero?
         print_ok "Formatting OK: #{stack.name}"
       else
-        Stacks.dirty!(stack.name)
+        Stacks.dirty!(stack)
         print_warning "Bad Formatting: #{stack.name}"; puts
       end
     end
@@ -163,7 +180,7 @@ module Terradactyl
       if stack.fmt.zero?
         print_ok "Formatted: #{stack.name}"
       else
-        Stacks.error!(stack.name)
+        Stacks.error!(stack)
         print_crit "Formatting failed: #{stack.name}"
       end
     end
@@ -175,7 +192,7 @@ module Terradactyl
       if stack.init.zero?
         print_ok "Initialized: #{stack.name}"; puts
       else
-        Stacks.error!(stack.name)
+        Stacks.error!(stack)
         print_crit "Initialization failed: #{stack.name}"; puts
         throw :error
       end
@@ -189,11 +206,11 @@ module Terradactyl
       when 0
         print_ok "No changes: #{stack.name}"; puts
       when 1
-        Stacks.error!(stack.name)
+        Stacks.error!(stack)
         print_crit "Plan failed: #{stack.name}"; puts
         throw :error
       when 2
-        Stacks.dirty!(stack.name)
+        Stacks.dirty!(stack)
         print_warning "Changes detected: #{stack.name}"; puts
         stack.show_plan_file
       else
@@ -204,9 +221,9 @@ module Terradactyl
     desc 'audit NAME', 'Audit an individual stack, by name'
     def audit(name)
       plan(name)
-      if Stacks.dirty?(name)
-        Stacks.error!(name)
-        print_crit "Dirty stack: #{name}"; puts
+      if stack = Stacks.dirty?(name)
+        Stacks.error!(stack)
+        print_crit "Dirty stack: #{stack.name}"; puts
       end
     end
 
@@ -231,7 +248,7 @@ module Terradactyl
       if stack.apply.zero?
         print_ok "Applied: #{stack.name}"; puts
       else
-        Stacks.error!(stack.name)
+        Stacks.error!(stack)
         print_crit "Failed to apply changes: #{stack.name}"; puts
       end
     end
@@ -243,7 +260,7 @@ module Terradactyl
       if stack.refresh.zero?
         print_warning "Refreshed: #{stack.name}"; puts
       else
-        Stacks.error!(stack.name)
+        Stacks.error!(stack)
         print_crit "Failed to refresh stack: #{stack.name}"; puts
       end
     end
@@ -255,7 +272,7 @@ module Terradactyl
       if stack.destroy.zero?
         print_warning "Destroyed: #{stack.name}"; puts
       else
-        Stacks.error!(stack.name)
+        Stacks.error!(stack)
         print_crit "Failed to apply changes: #{stack.name}"; puts
       end
     end

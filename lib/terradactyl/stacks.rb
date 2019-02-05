@@ -7,21 +7,33 @@ module Terradactyl
       @@dirty = []
       @@error = []
 
+      def error
+        @@error
+      end
+
       def error!(stack)
         @@error << stack
       end
 
-      def error?(stack=nil)
-        return @@error.member?(stack) if stack
+      def error?(name=nil)
+        if name
+          return @@error.find { |s| s.name.eql?(name) }
+        end
         @@error.any?
+      end
+
+      def dirty
+        @@dirty
       end
 
       def dirty!(stack)
         @@dirty << stack
       end
 
-      def dirty?(stack=nil)
-        return @@dirty.member?(stack) if stack
+      def dirty?(name=nil)
+        if name
+          return @@dirty.find { |s| s.name.eql?(name) }
+        end
         @@dirty.any?
       end
 
