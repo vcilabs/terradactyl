@@ -3,8 +3,8 @@ module Terradactyl
   class CLI < Thor
 
     def initialize(*args)
-      # Hook ensures we exit non-zero when ridin' dirty
-      at_exit { abort unless Stacks.clean? }
+      # Hook ensures abort on stack errors
+      at_exit { abort if Stacks.error? }
       super
     end
 
@@ -163,7 +163,7 @@ module Terradactyl
       if stack.fmt.zero?
         print_ok "Formatted: #{stack.name}"
       else
-        Stacks.dirty!(stack.name)
+        Stacks.error!(stack.name)
         print_crit "Formatting failed: #{stack.name}"
       end
     end
@@ -175,7 +175,7 @@ module Terradactyl
       if stack.init.zero?
         print_ok "Initialized: #{stack.name}"; puts
       else
-        Stacks.dirty!(stack.name)
+        Stacks.error!(stack.name)
         print_crit "Initialization failed: #{stack.name}"; puts
         throw :error
       end
@@ -189,7 +189,7 @@ module Terradactyl
       when 0
         print_ok "No changes: #{stack.name}"; puts
       when 1
-        Stacks.dirty!(stack.name)
+        Stacks.error!(stack.name)
         print_crit "Plan failed: #{stack.name}"; puts
         throw :error
       when 2
@@ -205,6 +205,7 @@ module Terradactyl
     def audit(name)
       plan(name)
       if Stacks.dirty?(name)
+        Stacks.error!(name)
         print_crit "Dirty stack: #{name}"; puts
       end
     end
@@ -230,7 +231,7 @@ module Terradactyl
       if stack.apply.zero?
         print_ok "Applied: #{stack.name}"; puts
       else
-        Stacks.dirty!(stack.name)
+        Stacks.error!(stack.name)
         print_crit "Failed to apply changes: #{stack.name}"; puts
       end
     end
@@ -242,7 +243,7 @@ module Terradactyl
       if stack.refresh.zero?
         print_warning "Refreshed: #{stack.name}"; puts
       else
-        Stacks.dirty!(stack.name)
+        Stacks.error!(stack.name)
         print_crit "Failed to refresh stack: #{stack.name}"; puts
       end
     end
@@ -254,7 +255,7 @@ module Terradactyl
       if stack.destroy.zero?
         print_warning "Destroyed: #{stack.name}"; puts
       else
-        Stacks.dirty!(stack.name)
+        Stacks.error!(stack.name)
         print_crit "Failed to apply changes: #{stack.name}"; puts
       end
     end
