@@ -79,6 +79,8 @@ module Terradactyl
         line  = [caps['attrib'], %{#{blobs}}].join
       end
       line
+    rescue JSON::ParserError
+      line
     end
 
     def read_plan(plan_path)
