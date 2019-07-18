@@ -1,0 +1,14 @@
+---
+terradactyl:
+  base_folder: ignore me
+  terraform:
+    version: 0.11.14
+    init:
+      lock: true
+  cleanup:
+    empty: true
+    match:
+      - "*.tfstate*"
+      - "*.tfout"
+      - "*.tflock"
+      - ".terraform"

@@ -2,6 +2,12 @@ module Terradactyl
 
   class CLI < Thor
 
+    include Common
+
+    def self.exit_on_failure?
+      true
+    end
+
     def initialize(*args)
       # Hook ensures abort on stack errors
       at_exit { abort if Stacks.error? }
@@ -17,7 +23,7 @@ module Terradactyl
 
       def validate_smartplan(stacks)
         if stacks.size == 0
-          print_message "No Stacks Modified ..."; puts
+          print_message "No Stacks Modified ..."
           print_line "Did you forget to `git add` your selected changes?"
         end
         stacks
@@ -25,7 +31,7 @@ module Terradactyl
 
       def validate_planpr(stacks)
         if stacks.size == 0
-          print_message "No Stacks Modified ..."; puts
+          print_message "No Stacks Modified ..."
           print_line "Skipping plan ..."
         end
         stacks
@@ -33,11 +39,10 @@ module Terradactyl
 
       def generate_report(report)
         data_file = "#{config.base_folder}.audit.json"
-        print_warning "Writing Report: #{data_file} ..."; puts
+        print_warning "Writing Report: #{data_file} ..."
         report[:error] = Stacks.error.map { |s| "#{config.base_folder}/#{s.name}" }.sort
-        Dir.chdir Rake.original_dir
         File.write data_file, JSON.pretty_generate(report)
-        print_ok "Done!"; puts
+        print_ok "Done!"
       end
 
     }
@@ -91,17 +96,19 @@ module Terradactyl
     desc 'smartapply', 'Apply any stacks that contain plan files', hide: true
     def smartapply
       print_header "SmartApplying Stacks ..."
-      Stacks.load(filter: StacksApplyFilterPrePlanned.new).each do |stack|
-        apply(stack)
-      end
+      stacks = Stacks.load(filter: StacksApplyFilterPrePlanned.new)
+      print_warning 'No stacks contain plan files ...' unless stacks.any?
+      stacks.each { |stack| apply(stack) }
+      print_message "Total Stacks Modified: #{stacks.size}"
     end
 
     desc 'smartrefresh','Refresh any stacks that contain plan files', hide: true
     def smartrefresh
       print_header "SmartRefreshing Stacks ..."
-      Stacks.load(filter: StacksApplyFilterPrePlanned.new).each do |stack|
-        refresh(stack)
-      end
+      stacks = Stacks.load(filter: StacksApplyFilterPrePlanned.new)
+      print_warning 'No stacks contain plan files ...' unless stacks.any?
+      stacks.each { |stack| refresh(stack) }
+      print_message "Total Stacks Refreshed: #{stacks.size}"
     end
 
     #################################################################
@@ -120,7 +127,7 @@ module Terradactyl
 
     desc 'cleanall', 'Clean all stacks'
     def cleanall
-      print_header "Cleaning All Stacks ..."
+      print_header "Cleaning ALL Stacks ..."
       Stacks.load.each { |stack| clean(stack) }
     end
 
@@ -168,8 +175,8 @@ module Terradactyl
       if stack.lint.zero?
         print_ok "Formatting OK: #{stack.name}"
       else
-        Stacks.dirty!(stack)
-        print_warning "Bad Formatting: #{stack.name}"; puts
+        Stacks.error!(stack)
+        print_warning "Bad Formatting: #{stack.name}"
       end
     end
 
@@ -190,10 +197,10 @@ module Terradactyl
       stack = Stack.new(name)
       print_ok "Initializing: #{stack.name}"
       if stack.init.zero?
-        print_ok "Initialized: #{stack.name}"; puts
+        print_ok "Initialized: #{stack.name}"
       else
         Stacks.error!(stack)
-        print_crit "Initialization failed: #{stack.name}"; puts
+        print_crit "Initialization failed: #{stack.name}"
         throw :error
       end
     end
@@ -201,17 +208,17 @@ module Terradactyl
     desc 'plan NAME', 'Plan an individual stack, by name'
     def plan(name)
       stack = Stack.new(name)
-      print_ok "Planning: #{stack.name}"; puts
+      print_ok "Planning: #{stack.name}"
       case stack.plan
       when 0
-        print_ok "No changes: #{stack.name}"; puts
+        print_ok "No changes: #{stack.name}"
       when 1
         Stacks.error!(stack)
-        print_crit "Plan failed: #{stack.name}"; puts
+        print_crit "Plan failed: #{stack.name}"
         throw :error
       when 2
         Stacks.dirty!(stack)
-        print_warning "Changes detected: #{stack.name}"; puts
+        print_warning "Changes detected: #{stack.name}"
         stack.show_plan_file
       else
         fail
@@ -223,16 +230,16 @@ module Terradactyl
       plan(name)
       if stack = Stacks.dirty?(name)
         Stacks.error!(stack)
-        print_crit "Dirty stack: #{stack.name}"; puts
+        print_crit "Dirty stack: #{stack.name}"
       end
     end
 
     desc 'clean NAME', 'Clean an individual stack, by name'
     def clean(name)
       stack = Stack.new(name)
-      print_warning "Cleaning: #{stack.name}"; puts
+      print_warning "Cleaning: #{stack.name}"
       stack.clean
-      print_ok "Cleaned: #{stack.name}"; puts
+      print_ok "Cleaned: #{stack.name}"
     end
 
     #################################################################
@@ -244,36 +251,36 @@ module Terradactyl
     desc 'apply NAME', 'Apply an individual stack, by name', hide: true
     def apply(name)
       stack = Stack.new(name)
-      print_warning "Applying: #{stack.name}"; puts
+      print_warning "Applying: #{stack.name}"
       if stack.apply.zero?
-        print_ok "Applied: #{stack.name}"; puts
+        print_ok "Applied: #{stack.name}"
       else
         Stacks.error!(stack)
-        print_crit "Failed to apply changes: #{stack.name}"; puts
+        print_crit "Failed to apply changes: #{stack.name}"
       end
     end
 
     desc 'refresh NAME', 'Refresh state on an individual stack, by name', hide: true
     def refresh(name)
       stack = Stack.new(name)
-      print_crit "Refreshing: #{stack.name}"; puts
+      print_crit "Refreshing: #{stack.name}"
       if stack.refresh.zero?
-        print_warning "Refreshed: #{stack.name}"; puts
+        print_warning "Refreshed: #{stack.name}"
       else
         Stacks.error!(stack)
-        print_crit "Failed to refresh stack: #{stack.name}"; puts
+        print_crit "Failed to refresh stack: #{stack.name}"
       end
     end
 
     desc 'destroy NAME', 'Destroy an individual stack, by name', hide: true
     def destroy(name)
       stack = Stack.new(name)
-      print_crit "Destroying: #{stack.name}"; puts
+      print_crit "Destroying: #{stack.name}"
       if stack.destroy.zero?
-        print_warning "Destroyed: #{stack.name}"; puts
+        print_warning "Destroyed: #{stack.name}"
       else
         Stacks.error!(stack)
-        print_crit "Failed to apply changes: #{stack.name}"; puts
+        print_crit "Failed to apply changes: #{stack.name}"
       end
     end
 

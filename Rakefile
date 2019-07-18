@@ -6,9 +6,11 @@ require 'rspec/core/rake_task'
 
 RSpec::Core::RakeTask.new(:spec)
 
-# task :default => :spec
+RSpec::Core::RakeTask.new(:doc) do |t|
+  t.rspec_opts = "--format doc"
+end
 
-task :default => :build
+task :default => :spec
 
 BUILD_DIR = 'pkg'
 

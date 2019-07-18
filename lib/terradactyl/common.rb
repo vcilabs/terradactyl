@@ -1,20 +1,24 @@
+# frozen_string_literal: true
+
 module Terradactyl
-
   module Common
-
     COLUMN_WIDTH = 80
     BORDER_CHAR  = '#'
 
-    Config.instance.environment.to_h.each do |variable, value|
-      ENV[variable.to_s] = value
+    extend self
+
+    class << self
+      def included(base)
+        String.disable_colorization = config.misc.disable_color
+      end
     end
 
     def config
-      Config.instance
+      @config ||= ConfigProject.instance
     end
 
-    def terraform_path
-      config.terraform.path || %{terraform}
+    def terraform_binary
+      config.terraform.binary || %(terraform)
     end
 
     def tag
@@ -30,11 +34,11 @@ module Terradactyl
     end
 
     def dot_icon
-      config.misc.utf8 ? "•" : "*"
+      config.misc.utf8 ? '•' : '*'
     end
 
     def stack_icon
-      config.misc.utf8 ? "  🥞  " : "  |||  "
+      config.misc.utf8 ? '  𝓣  ' : '  |||  '
     end
 
     def print_crit(msg)
@@ -49,34 +53,39 @@ module Terradactyl
       print_message(msg, :light_yellow)
     end
 
-    def print_dot(msg, color=:light_blue)
-      string = "     #{dot_icon} #{msg}"
-      puts string.send(color.to_sym)
-    end
-
     def print_content(content)
       content.split("\n").each do |line|
         print_line line
       end
-    end
-
-    def print_line(msg, color=:light_blue)
-      string = "     #{msg}"
-      puts string.send(color.to_sym)
-    end
-
-    def print_message(msg, color=:light_blue)
-      string = "#{stack_icon}[#{tag}] #{msg}"
-      puts string.send(color.to_sym)
-    end
-
-    def print_header(msg)
-      indent = centre + msg.size/2 - 1
-      header = [border, ("#%#{indent}s" % "#{tag} | #{msg}"), border].join("\n")
-      puts header.blue
       puts
     end
 
-  end
+    def print_dot(msg, color = :light_blue)
+      string = "     #{dot_icon} #{msg}"
+      cputs(string, color)
+    end
 
+    def print_line(msg, color = :light_blue)
+      string = "     #{msg}"
+      cputs(string, color)
+    end
+
+    def print_message(msg, color = :light_blue)
+      string = "#{stack_icon}[#{tag}] #{msg}"
+      cputs(string, color)
+      puts
+    end
+
+    def print_header(msg, color = :blue)
+      indent  = centre + msg.size / 2 - 1
+      content = format("#%#{indent}s", "#{tag} | #{msg}")
+      string  = [border, content, border].join("\n")
+      cputs(string, color)
+      puts
+    end
+
+    def cputs(msg, color)
+      puts config.misc.disable_color ? msg : msg.send(color.to_s)
+    end
+  end
 end

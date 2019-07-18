@@ -2,6 +2,8 @@ module Terradactyl
 
   class StacksPlanFilterDefault
 
+    include Common
+
     def base_dir
       config.base_folder
     end
@@ -59,11 +61,13 @@ module Terradactyl
   class StacksApplyFilterDefault < StacksPlanFilterDefault
   end
 
-  class StacksApplyFilterPrePlanned
+  class StacksApplyFilterPrePlanned < StacksApplyFilterDefault
 
     def sift(stacks)
-      Dir.chdir config.base_folder
-      stacks & Dir.glob('**/*.tfout').map { |p| File.dirname(p) }
+      targets = Dir.glob('**/*.tfout').each_with_object([]) do |path, memo|
+        memo << path.split('/')[1]
+      end
+      stacks & targets
     end
 
   end

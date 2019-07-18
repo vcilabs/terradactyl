@@ -1,159 +1,175 @@
+# frozen_string_literal: true
+
 module Terradactyl
 
   class Stack
 
+    include Common
+    include Terraform
+
+    attr_reader :stack_config
+
     def initialize(stack_name)
-      @stack_name = validate stack_name.split('/').last
-      @base_dir   = "#{Rake.original_dir}/#{config.base_folder}"
-      @stack_path = "#{@base_dir}/#{@stack_name}"
-      @plan_path  = "#{@base_dir}/#{@stack_name}/#{@stack_name}.tfout"
-      expand_path_vars
-      init_env_vars
+      @stack_name   = validate_stack_name(stack_name.split('/').last)
+      @stack_config = ConfigStack.new(@stack_name)
+      inject_env_vars
     end
 
-    def parallelism
-      @parallelism ||= config.terraform.parallelism
-    end
-
-    def lock
-      op = caller_locations(1,1)[0].label
-      @lock ||= (config.terraform.lock[op] rescue true)
-    end
-
-    def init
-      Dir.chdir stack_path
-      result = execute terraform_path, :init, '-backend=true', "-lock=#{lock}",
-        '-get=true', '-get-plugins=true', '-input=false', '-force-copy'
-      puts; result
-    end
-
-    def plan
-      Dir.chdir stack_path
-      execute terraform_path, :plan, '-refresh=true', "-lock=#{lock}",
-        '-detailed-exitcode', "-parallelism=#{parallelism}", "-out=#{plan_path}"
-    end
-
-    def has_plan?
-      Dir.chdir stack_path
-      File.exist? plan_path
-    end
-
-    def apply
-      Dir.chdir stack_path
-      execute terraform_path, :apply, '-refresh=true', "-lock=#{lock}",
-        "-parallelism=#{parallelism}", plan_path
-    end
-
-    def refresh
-      Dir.chdir stack_path
-      execute terraform_path, :refresh, '-input=false', "-lock=#{lock}"
-    end
-
-    def destroy
-      Dir.chdir stack_path
-      execute terraform_path, :destroy, '-refresh=true', "-lock=#{lock}",
-        "-parallelism=#{parallelism}", '-force'
-    end
-
-    def lint
-      Dir.chdir stack_path
-      execute terraform_path, :fmt, '-list=true', "-check=true"
-    end
-
-    def fmt
-      Dir.chdir stack_path
-      execute terraform_path, :fmt
-    end
-
-    def name
-      @stack_name
-    end
-
-    def path
-      @stack_path
+    def config
+      stack_config || super
     end
 
     def <=>(other)
-      self.name <=> other.name
+      name <=> other.name
     end
 
     def to_s
       "<name: #{name}, path: #{path}>"
     end
 
-    def remove_plan_file
-      print_dot "Removing Plan File: #{File.basename(@plan_path)}",
-        color=:light_yellow
-      FileUtils.rm_rf @plan_path
+    def init
+      pushd(stack_path)
+      Commands::Init.execute(dir_or_plan: nil, options: command_options)
+    ensure
+      popd
     end
 
-    def show_plan_file
-      if config.misc.quiet
-        config.misc.quiet = false
-        plan = TerraformPlan.load(plan_path)
-        print_content(plan.to_s);puts
-        print_content(plan.summary);puts
-        config.misc.quiet = true
+    def plan
+      pushd(stack_path)
+      options = command_options.tap do |dat|
+        dat.state = state_file
+        dat.out   = plan_file
       end
+      Commands::Plan.execute(dir_or_plan: nil, options: options)
+    ensure
+      popd
+    end
+
+    def apply
+      pushd(stack_path)
+      Commands::Apply.execute(dir_or_plan: plan_file, options: command_options)
+    ensure
+      popd
+    end
+
+    def refresh
+      pushd(stack_path)
+      options = command_options.tap { |dat| dat.state = state_file }
+      Commands::Refresh.execute(dir_or_plan: nil, options: options)
+    ensure
+      popd
+    end
+
+    def destroy
+      pushd(stack_path)
+      options = command_options.tap { |dat| dat.state = state_file }
+      Commands::Destroy.execute(dir_or_plan: nil, options: options)
+    ensure
+      popd
+    end
+
+    def lint
+      pushd(stack_path)
+      options = command_options.tap { |dat| dat.check = true }
+      Commands::Fmt.execute(dir_or_plan: nil, options: options)
+    ensure
+      popd
+    end
+
+    def fmt
+      pushd(stack_path)
+      Commands::Fmt.execute(dir_or_plan: nil, options: command_options)
+    ensure
+      popd
     end
 
     def clean
-      Dir.chdir stack_path
+      pushd(path)
       removals = config.cleanup.match.map { |p| Dir.glob("**/#{p}") }
-      removals << %x{find . -type d -empty}.split if config.cleanup.empty
-      removals = removals.flatten.sort.uniq.each do |path|
-        print_dot "Removing: #{path}", color=:light_yellow
-        FileUtils.rm_rf path
+      removals << %x(find . -type d -empty).split if config.cleanup.empty
+      removals = removals.flatten.sort.uniq.each do |trash|
+        print_dot("Removing: #{trash}", :light_yellow)
+        FileUtils.rm_rf(trash)
       end
       puts unless removals.empty?
+    ensure
+      popd
+    end
+
+    def has_plan?
+      pushd(stack_path)
+      File.exist?(plan_file)
+    ensure
+      popd
+    end
+
+    def remove_plan_file
+      pushd(stack_path)
+      print_dot("Removing Plan File: #{File.basename(plan_file)}",
+                :light_yellow)
+      FileUtils.rm_rf(plan_file)
+    ensure
+      popd
+    end
+
+    def show_plan_file
+      pushd(stack_path)
+      plan = Terraform::PlanFile.load(plan_file, options: command_options)
+      print_content(plan.to_s)
+      print_content(plan.summary)
+    ensure
+      popd
     end
 
     private
 
-    attr_reader :stack_name, :base_dir, :stack_path, :plan_path
-
-    def validate(stack_name)
+    def validate_stack_name(stack_name)
       unless Stacks.validate(stack_name)
-        print_crit "Stack not found: #{stack_name}"; puts
+        print_crit("Stack not found: #{stack_name}")
         abort
       end
       stack_name
     end
 
-    def expand_path_vars
-      ENV['TF_PLUGIN_CACHE_DIR'] = File.expand_path(ENV['TF_PLUGIN_CACHE_DIR'])
-    end
-
-    def init_env_vars
+    def inject_env_vars
       if config.misc.disable_color
-        flag = '-no-color'
-        unless (args = ENV['TF_CLI_ARGS'].to_s.split(',')).member?(flag)
-          ENV['TF_CLI_ARGS'] = [args, flag].compact.flatten.join(",")
+        args = ENV['TF_CLI_ARGS'].to_s.split(',')
+        args << '-no-color'
+        ENV['TF_CLI_ARGS'] = args.compact.flatten.uniq.join(',')
+      end
+    end
+
+    def command_options
+      who = caller_locations(1, 1)[0].label.to_sym
+      Commands::Options.new do |dat|
+        dat.environment = config.environment
+        %i[binary version autoinstall install_dir echo quiet].each do |key|
+          dat.send("#{key}=".to_sym, config.terraform.send(key))
+        end
+        config.terraform.send(who)&.each_pair do |key, value|
+          dat.send("#{key}=".to_sym, value)
         end
       end
     end
 
-    def debug?
-      config.misc.debug
+    def pushd(path)
+      @working_dir_last = Dir.pwd
+      Dir.chdir(path)
     end
 
-    def debug(args)
-      print_line(args) if debug?
+    def popd
+      Dir.chdir(@working_dir_last)
     end
 
-    def execute(*args)
-      args.map!(&:to_s)
-      debug(args)
-      result = Open3.popen3(ENV, *args) do |stdin, stdout, stderr, wait_thru|
-        while stdout.gets
-          puts $_ unless config.misc.quiet
-        end
-        puts $_ while stderr.gets
-        wait_thru.value.exitstatus
-      end
-      result
+    def method_missing(sym, *args, &block)
+      config.send(sym.to_sym, *args, &block)
+    rescue NameError
+      super
     end
 
+    def respond_to_missing?(sym, *args)
+      config.respond_to?(sym) || super
+    end
   end
 
 end

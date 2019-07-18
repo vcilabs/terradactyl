@@ -2,6 +2,9 @@
 
 module Terradactyl
   module Terraform
-    VERSION = '0.1.0'
+    module Commands
+      class Version < Base
+      end
+    end
   end
 end

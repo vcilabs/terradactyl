@@ -1,0 +1,20 @@
+---
+terradactyl:
+  base_folder: stacks
+  terraform:
+    version: 0.11.10
+    autoinstall: true
+    init:
+      lock: false
+      no_color: true
+  environment:
+    FOO: foo
+  cleanup:
+    empty: true
+    match:
+      - "*.tfstate*"
+      - "*.tfout"
+      - "*.tflock"
+      - ".terraform"
+  misc:
+    utf8: false

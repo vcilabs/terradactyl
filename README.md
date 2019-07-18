@@ -20,26 +20,35 @@ Or install it yourself as:
 
 ## Configuration
 
-Configuration of Terradactyl is performed by placing a `terraform.yml` file in your Terraform repo.
+Configuration of Terradactyl is performed by placing a `terradactly.yaml` file in your Terraform repo.
 
 Example:
 
     ---
     terradactyl:
-      base_folder: _test
+      base_folder: my_project
       terraform:
-        path: /path/to/terraform
-        version: 0.11.1
-        parallelism: 5
-        lock: true
+        version: 0.11.10
+        install_dir: ~/bin
+        autoinstall: true
+        apply:
+          quiet: false
+        destroy:
+          quiet: false
       environment:
         AWS_REGION: us-west-2
-        TF_PLUGIN_CACHE_DIR: ~/.terraform_plugins
-        TF_CLI_ARGS: -no-color
+        TF_PLUGIN_CACHE_DIR: ~/.terraform.d/plugins
       misc:
-        debug: false
-        quiet: true
         disable_color: false
+        utf8: true
+      cleanup:
+        empty: true
+        match:
+          - "*.tfstate*"
+          - "*.tfout"
+          - "*.tflock"
+          - "*.zip"
+          - ".terraform"
 
 ## Usage
 

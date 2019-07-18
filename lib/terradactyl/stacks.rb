@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 module Terradactyl
 
   class Stacks
@@ -15,7 +17,7 @@ module Terradactyl
         @@error << stack
       end
 
-      def error?(name=nil)
+      def error?(name = nil)
         if name
           return @@error.find { |s| s.name.eql?(name) }
         end
@@ -30,7 +32,7 @@ module Terradactyl
         @@dirty << stack
       end
 
-      def dirty?(name=nil)
+      def dirty?(name = nil)
         if name
           return @@dirty.find { |s| s.name.eql?(name) }
         end
@@ -40,13 +42,14 @@ module Terradactyl
     end
 
     include Enumerable
+    include Common
 
     def self.validate(stack)
       new.validate(stack)
     end
 
     def self.load(*args)
-      new *args
+      new(*args)
     end
 
     def initialize(filter: StacksPlanFilterDefault.new)
