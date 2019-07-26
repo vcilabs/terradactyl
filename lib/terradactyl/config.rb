@@ -73,6 +73,8 @@ module Terradactyl
         Marshal.load(Marshal.dump(memo))
       end
       @terradactyl = structify(@config).terradactyl
+      configure_colorization
+      @terradactyl
     end
 
     def load_defaults(defaults)
@@ -93,6 +95,10 @@ module Terradactyl
       OpenStruct.new(hash.each_with_object({}) do |(key, val), memo|
         memo[key] = val.is_a?(Hash) ? structify(val) : val
       end)
+    end
+
+    def configure_colorization
+      String.disable_colorization = terradactyl.misc.disable_color
     end
 
     def method_missing(sym, *args, &block)
