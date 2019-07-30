@@ -10,7 +10,7 @@ module Terradactyl
     attr_reader :stack_config
 
     def initialize(stack_name)
-      @stack_name   = validate_stack_name(stack_name.split('/').last)
+      @stack_name   = validate_stack_name(stack_name)
       @stack_config = ConfigStack.new(@stack_name)
       inject_env_vars
     end
@@ -96,35 +96,28 @@ module Terradactyl
       popd
     end
 
-    def has_plan?
-      pushd(stack_path)
-      File.exist?(plan_file)
-    ensure
-      popd
+    def plan_file_obj
+      Terraform::PlanFile.load(plan_path, options: command_options)
+    end
+
+    def planned?
+      File.exist?(plan_path)
     end
 
     def remove_plan_file
-      pushd(stack_path)
-      print_dot("Removing Plan File: #{File.basename(plan_file)}",
-                :light_yellow)
-      FileUtils.rm_rf(plan_file)
-    ensure
-      popd
+      print_dot("Removing Plan File: #{plan_file}", :light_yellow)
+      FileUtils.rm_rf(plan_path)
     end
 
     def show_plan_file
-      pushd(stack_path)
-      plan = Terraform::PlanFile.load(plan_file, options: command_options)
-      print_content(plan.to_s)
-      print_content(plan.summary)
-    ensure
-      popd
+      print_content(plan_file_obj.to_s)
+      print_content(plan_file_obj.summary)
     end
 
     private
 
     def validate_stack_name(stack_name)
-      unless Stacks.validate(stack_name)
+      unless stack_name = Stacks.validate(stack_name)
         print_crit("Stack not found: #{stack_name}")
         abort
       end

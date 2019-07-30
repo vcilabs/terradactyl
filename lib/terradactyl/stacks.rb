@@ -19,7 +19,7 @@ module Terradactyl
 
       def error?(name = nil)
         if name
-          return @@error.find { |s| s.name.eql?(name) }
+          return @@error.find { |s| s.name.eql?(validate(name)) }
         end
         @@error.any?
       end
@@ -34,7 +34,7 @@ module Terradactyl
 
       def dirty?(name = nil)
         if name
-          return @@dirty.find { |s| s.name.eql?(name) }
+          return @@dirty.find { |s| s.name.eql?(validate(name)) }
         end
         @@dirty.any?
       end
@@ -62,7 +62,8 @@ module Terradactyl
     end
 
     def validate(stack_name)
-      @stacks.member? stack_name
+      stack_name = stack_name.split('/').last
+      @stacks.member?(stack_name) ? stack_name : nil
     end
 
     def size

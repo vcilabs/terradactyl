@@ -7,12 +7,6 @@ module Terradactyl
 
     extend self
 
-    class << self
-      def included(base)
-        String.disable_colorization = config.misc.disable_color
-      end
-    end
-
     def config
       @config ||= ConfigProject.instance
     end
