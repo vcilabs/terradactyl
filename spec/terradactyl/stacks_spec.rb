@@ -7,13 +7,13 @@ RSpec.describe Terradactyl::Stacks do
   let(:artifacts)  { terraform_build_artifacts(stack) }
 
   before(:each) do
-    Terradactyl::Terraform::VersionManager.list.each do |path|
+    Terradactyl::Terraform::VersionManager.binaries.each do |path|
       FileUtils.rm path
     end
   end
 
   after(:all) do
-    Terradactyl::Terraform::VersionManager.list.each do |path|
+    Terradactyl::Terraform::VersionManager.binaries.each do |path|
       FileUtils.rm path
     end
   end

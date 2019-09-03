@@ -1,7 +1,6 @@
 # frozen_string_literal: true
 
 module Terradactyl
-
   class ConfigApplication
     CONFIG_DEFAULTS = <<~CONFIG_DEFAULTS
       ---

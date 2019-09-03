@@ -1,9 +1,8 @@
+# frozen_string_literal: true
+
 module Terradactyl
-
   class CLI < Thor
-
     include Common
-
     def self.exit_on_failure?
       true
     end
@@ -14,25 +13,24 @@ module Terradactyl
       super
     end
 
-    no_commands {
-
+    no_commands do
       # Monkey-patch Thor internal method to break out of nested calls
       def invoke_command(command, *args)
         catch(:error) { super }
       end
 
       def validate_smartplan(stacks)
-        if stacks.size == 0
-          print_message "No Stacks Modified ..."
-          print_line "Did you forget to `git add` your selected changes?"
+        if stacks.empty?
+          print_message 'No Stacks Modified ...'
+          print_line 'Did you forget to `git add` your selected changes?'
         end
         stacks
       end
 
       def validate_planpr(stacks)
-        if stacks.size == 0
-          print_message "No Stacks Modified ..."
-          print_line "Skipping plan ..."
+        if stacks.empty?
+          print_message 'No Stacks Modified ...'
+          print_line 'Skipping plan ...'
         end
         stacks
       end
@@ -42,10 +40,9 @@ module Terradactyl
         print_warning "Writing Report: #{data_file} ..."
         report[:error] = Stacks.error.map { |s| "#{config.base_folder}/#{s.name}" }.sort
         File.write data_file, JSON.pretty_generate(report)
-        print_ok "Done!"
+        print_ok 'Done!'
       end
-
-    }
+    end
 
     #################################################################
     # GENERIC TASKS
@@ -54,15 +51,15 @@ module Terradactyl
 
     desc 'stacks', 'List the stacks'
     def stacks
-      print_ok "Stacks:"
+      print_ok 'Stacks:'
       Stacks.load.each do |stack|
-        print_dot "#{stack}"
+        print_dot stack.to_s
       end
     end
 
     desc 'version', 'Print version'
     def version
-      print_message "version: %s" % Terradactyl::VERSION
+      print_message 'version: %s' % Terradactyl::VERSION
     end
 
     #################################################################
@@ -73,7 +70,7 @@ module Terradactyl
 
     desc 'planpr', 'Plan stacks against origin/HEAD (used for PRs)', hide: true
     def planpr
-      print_header "SmartPlanning PR ..."
+      print_header 'SmartPlanning PR ...'
       stacks = Stacks.load(filter: StacksPlanFilterGitDiffOriginBranch.new)
       validate_planpr(stacks).each do |stack|
         clean(stack)
@@ -84,7 +81,7 @@ module Terradactyl
 
     desc 'smartplan', 'Plan any stacks that differ from Git HEAD'
     def smartplan
-      print_header "SmartPlanning Stacks ..."
+      print_header 'SmartPlanning Stacks ...'
       stacks = Stacks.load(filter: StacksPlanFilterGitDiffHead.new)
       validate_smartplan(stacks).each do |stack|
         clean(stack)
@@ -95,16 +92,16 @@ module Terradactyl
 
     desc 'smartapply', 'Apply any stacks that contain plan files', hide: true
     def smartapply
-      print_header "SmartApplying Stacks ..."
+      print_header 'SmartApplying Stacks ...'
       stacks = Stacks.load(filter: StacksApplyFilterPrePlanned.new)
       print_warning 'No stacks contain plan files ...' unless stacks.any?
       stacks.each { |stack| apply(stack) }
       print_message "Total Stacks Modified: #{stacks.size}"
     end
 
-    desc 'smartrefresh','Refresh any stacks that contain plan files', hide: true
+    desc 'smartrefresh', 'Refresh any stacks that contain plan files', hide: true
     def smartrefresh
-      print_header "SmartRefreshing Stacks ..."
+      print_header 'SmartRefreshing Stacks ...'
       stacks = Stacks.load(filter: StacksApplyFilterPrePlanned.new)
       print_warning 'No stacks contain plan files ...' unless stacks.any?
       stacks.each { |stack| refresh(stack) }
@@ -127,13 +124,13 @@ module Terradactyl
 
     desc 'cleanall', 'Clean all stacks'
     def cleanall
-      print_header "Cleaning ALL Stacks ..."
+      print_header 'Cleaning ALL Stacks ...'
       Stacks.load.each { |stack| clean(stack) }
     end
 
     desc 'planall', 'Plan all stacks'
     def planall
-      print_header "Planning ALL Stacks ..."
+      print_header 'Planning ALL Stacks ...'
       Stacks.load.each do |stack|
         catch(:error) do
           clean(stack)
@@ -145,10 +142,10 @@ module Terradactyl
 
     desc 'auditall', 'Audit all stacks'
     options report: :optional
-    method_option :report, :type => :boolean
+    method_option :report, type: :boolean
     def auditall
       report = { start: Time.now.to_json }
-      print_header "Auditing ALL Stacks ..."
+      print_header 'Auditing ALL Stacks ...'
       Stacks.load.each do |stack|
         catch(:error) do
           clean(stack)
@@ -158,7 +155,7 @@ module Terradactyl
       end
       report[:finish] = Time.now.to_json
       if options[:report]
-        print_header "Audit Report ..."
+        print_header 'Audit Report ...'
         generate_report(report)
       end
     end
@@ -228,7 +225,7 @@ module Terradactyl
     desc 'audit NAME', 'Audit an individual stack, by name'
     def audit(name)
       plan(name)
-      if stack = Stacks.dirty?(name)
+      if (stack = Stacks.dirty?(name))
         Stacks.error!(stack)
         print_crit "Dirty stack: #{stack.name}"
       end
@@ -283,8 +280,5 @@ module Terradactyl
         print_crit "Failed to apply changes: #{stack.name}"
       end
     end
-
   end
-
 end
-
