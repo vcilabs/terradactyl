@@ -12,14 +12,30 @@ RSpec.describe Terradactyl::Stack do
     LINT_ME
   end
 
+  let(:install_error) do
+    Terradactyl::Terraform::VersionManager::VersionManagerError
+  end
+
+  let(:install_error_msg) do
+    Terradactyl::Terraform::VersionManager::ERROR_MISSING
+  end
+
+  let(:inventory_error) do
+    Terradactyl::Terraform::VersionManager::InventoryError
+  end
+
+  let(:inventory_error_msg) do
+    Terradactyl::Terraform::VersionManager::Inventory::ERROR_VERSION_MISSING
+  end
+
   before(:all) do
-    Terradactyl::Terraform::VersionManager.list.each do |path|
+    Terradactyl::Terraform::VersionManager.binaries.each do |path|
       FileUtils.rm path
     end
   end
 
   after(:all) do
-    Terradactyl::Terraform::VersionManager.list.each do |path|
+    Terradactyl::Terraform::VersionManager.binaries.each do |path|
       FileUtils.rm path
     end
   end
@@ -51,7 +67,8 @@ RSpec.describe Terradactyl::Stack do
       context 'without autoinstall' do
         it 'fails to execute' do
           stack.config.terraform.autoinstall = false
-          expect { stack.init }.to raise_error(Terradactyl::Terraform::VersionError)
+          expect { stack.init }.to raise_error(
+            inventory_error, /#{inventory_error_msg}/)
         end
       end
 

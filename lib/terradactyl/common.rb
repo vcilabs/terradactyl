@@ -5,7 +5,7 @@ module Terradactyl
     COLUMN_WIDTH = 80
     BORDER_CHAR  = '#'
 
-    extend self
+    module_function
 
     def config
       @config ||= ConfigProject.instance

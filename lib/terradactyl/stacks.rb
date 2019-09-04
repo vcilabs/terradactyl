@@ -1,11 +1,8 @@
 # frozen_string_literal: true
 
 module Terradactyl
-
   class Stacks
-
     class << self
-
       @@dirty = []
       @@error = []
 
@@ -18,9 +15,8 @@ module Terradactyl
       end
 
       def error?(name = nil)
-        if name
-          return @@error.find { |s| s.name.eql?(validate(name)) }
-        end
+        return @@error.find { |s| s.name.eql?(validate(name)) } if name
+
         @@error.any?
       end
 
@@ -33,12 +29,10 @@ module Terradactyl
       end
 
       def dirty?(name = nil)
-        if name
-          return @@dirty.find { |s| s.name.eql?(validate(name)) }
-        end
+        return @@dirty.find { |s| s.name.eql?(validate(name)) } if name
+
         @@dirty.any?
       end
-
     end
 
     include Enumerable
@@ -70,6 +64,10 @@ module Terradactyl
       @stacks.size
     end
 
+    def empty?
+      list.empty?
+    end
+
     def each(&block)
       list.each(&block)
     end
@@ -83,7 +81,5 @@ module Terradactyl
     def stacks_all
       paths.map { |p| File.dirname(p) }.sort.uniq.map { |p| File.basename(p) }
     end
-
   end
-
 end
