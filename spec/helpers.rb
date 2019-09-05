@@ -15,24 +15,28 @@ module Helpers
 
   def terraform_build_artifacts(stack)
     OpenStruct.new({
-      init:    "#{stack.path}/.terraform",
-      plan:    "#{stack.path}/#{stack.name}.tfout",
-      apply:   "#{stack.path}/terraform.tfstate",
-      refresh: "#{stack.path}/terraform.tfstate.backup",
-      destroy: "#{stack.path}/terraform.tfstate.backup",
-      lint:    "#{stack.path}/unlinted.tf",
+      init:     "#{stack.path}/.terraform",
+      plan:     "#{stack.path}/#{stack.name}.tfout",
+      apply:    "#{stack.path}/terraform.tfstate",
+      refresh:  "#{stack.path}/terraform.tfstate.backup",
+      destroy:  "#{stack.path}/terraform.tfstate.backup",
+      lint:     "#{stack.path}/unlinted.tf",
+      validate: "#{stack.path}/invalid.tf",
+      checklist: "#{stack.path}/checklist.tf",
     })
   end
 
   def terraform_cmd_artifacts(stack_path)
     stack_name = stack_path.split('/').last
     OpenStruct.new({
-      init:    "#{stack_path}/.terraform",
-      plan:    "#{stack_path}/#{stack_name}.tfout",
-      apply:   "#{stack_path}/terraform.tfstate",
-      refresh: "#{stack_path}/terraform.tfstate.backup",
-      destroy: "#{stack_path}/terraform.tfstate.backup",
-      lint:    "#{stack_path}/unlinted.tf",
+      init:     "#{stack_path}/.terraform",
+      plan:     "#{stack_path}/#{stack_name}.tfout",
+      apply:    "#{stack_path}/terraform.tfstate",
+      refresh:  "#{stack_path}/terraform.tfstate.backup",
+      destroy:  "#{stack_path}/terraform.tfstate.backup",
+      lint:     "#{stack_path}/unlinted.tf",
+      validate: "#{stack_path}/invalid.tf",
+      checklist: "#{stack_path}/checklist.tf",
     })
   end
 
