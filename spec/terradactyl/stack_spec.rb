@@ -12,6 +12,21 @@ RSpec.describe Terradactyl::Stack do
     LINT_ME
   end
 
+  let(:invalid) do
+    <<~INVALID
+      variable "foo" {
+        default = false
+        type    = "map"
+      }
+    INVALID
+  end
+
+  let(:checklist) do
+    <<~CHECKLIST
+      resource "null_resource" "01" {}
+    CHECKLIST
+  end
+
   let(:install_error) do
     Terradactyl::Terraform::VersionManager::VersionManagerError
   end
@@ -194,7 +209,45 @@ RSpec.describe Terradactyl::Stack do
     end
   end
 
-  context 'on code formatting operations' do
+  context 'code validation operations' do
+    before(:each) do
+      stack.init
+    end
+
+    after(:each) do
+      config.reload
+    end
+
+    describe '#validate' do
+      before do
+        File.write(artifacts.validate, invalid)
+      end
+
+      after do
+        artifacts.each_pair { |_k,v| FileUtils.rm_rf(v) if File.exist?(v) }
+      end
+
+      it 'finds invalid stack code' do
+        silence { expect(stack.validate).not_to eq(0) }
+      end
+    end
+
+    describe '#checklist' do
+      before do
+        File.write(artifacts.checklist, checklist)
+      end
+
+      after do
+        artifacts.each_pair { |_k,v| FileUtils.rm_rf(v) if File.exist?(v) }
+      end
+
+      it 'finds future-incompatible stack code' do
+        expect(stack.checklist).not_to eq(0)
+      end
+    end
+  end
+
+  context 'code formatting operations' do
     before(:each) do
       File.write(artifacts.lint, unlinted)
     end

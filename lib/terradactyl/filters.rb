@@ -4,6 +4,14 @@ module Terradactyl
   class StacksPlanFilterDefault
     include Common
 
+    def self.name
+      'default'
+    end
+
+    def self.desc
+      'A list of all stacks in the basedir'
+    end
+
     def base_dir
       config.base_folder
     end
@@ -18,6 +26,14 @@ module Terradactyl
   end
 
   class StacksPlanFilterGitDiffHead < StacksPlanFilterDefault
+    def self.name
+      'diff-head'
+    end
+
+    def self.desc
+      'A list of all stacks that differ from Git HEAD'
+    end
+
     def git_cmd
       `git --no-pager diff --name-only HEAD`
     end
@@ -31,6 +47,14 @@ module Terradactyl
   end
 
   class StacksPlanFilterGitDiffFetchHead < StacksPlanFilterGitDiffHead
+    def self.name
+      'diff-fetch-head'
+    end
+
+    def self.desc
+      'A list of all stacks that differ from Git FETCH_HEAD'
+    end
+
     def git_cmd
       `git --no-pager diff --name-only FETCH_HEAD ORIG_HEAD`
     rescue
@@ -39,6 +63,14 @@ module Terradactyl
   end
 
   class StacksPlanFilterGitDiffOriginBranch < StacksPlanFilterGitDiffHead
+    def self.name
+      'diff-origin'
+    end
+
+    def self.desc
+      'A list of all stacks that differ from Git origin/HEAD'
+    end
+
     def current_branch
       `git symbolic-ref -q --short HEAD`
     end

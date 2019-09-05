@@ -15,9 +15,15 @@ module Terradactyl
       destroy
       lint
       fmt
+      validate
+      checklist
       clean
       plan_file_obj
     ].freeze
+
+    def self.load(stack_name)
+      new(stack_name)
+    end
 
     def initialize(stack_name)
       @stack_name   = validate_stack_name(stack_name)
@@ -71,6 +77,14 @@ module Terradactyl
 
     def fmt
       Commands::Fmt.execute(dir_or_plan: nil, options: command_options)
+    end
+
+    def validate
+      Commands::Validate.execute(dir_or_plan: nil, options: command_options)
+    end
+
+    def checklist
+      Commands::Checklist.execute(dir_or_plan: nil, options: command_options)
     end
 
     def clean
