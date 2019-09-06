@@ -15,6 +15,7 @@ require 'terradactyl/terraform'
 
 require_relative 'terradactyl/version'
 require_relative 'terradactyl/config'
+require_relative 'terradactyl/commands'
 require_relative 'terradactyl/common'
 require_relative 'terradactyl/stack'
 require_relative 'terradactyl/stacks'

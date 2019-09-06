@@ -3,23 +3,8 @@
 module Terradactyl
   class Stack
     include Common
-    include Terraform
 
     attr_reader :stack_config
-
-    COMMANDS = %i[
-      init
-      plan
-      apply
-      refresh
-      destroy
-      lint
-      fmt
-      validate
-      checklist
-      clean
-      plan_file_obj
-    ].freeze
 
     def self.load(stack_name)
       new(stack_name)
@@ -28,8 +13,8 @@ module Terradactyl
     def initialize(stack_name)
       @stack_name   = validate_stack_name(stack_name)
       @stack_config = ConfigStack.new(@stack_name)
+      Commands.extend_revision(config.terraform.version, self)
       inject_env_vars
-      decorate_cmds(*COMMANDS)
     end
 
     def config
@@ -42,63 +27,6 @@ module Terradactyl
 
     def to_s
       "<name: #{name}, path: #{path}>"
-    end
-
-    def init
-      Commands::Init.execute(dir_or_plan: nil, options: command_options)
-    end
-
-    def plan
-      options = command_options.tap do |dat|
-        dat.state = state_file
-        dat.out   = plan_file
-      end
-      Commands::Plan.execute(dir_or_plan: nil, options: options)
-    end
-
-    def apply
-      Commands::Apply.execute(dir_or_plan: plan_file, options: command_options)
-    end
-
-    def refresh
-      options = command_options.tap { |dat| dat.state = state_file }
-      Commands::Refresh.execute(dir_or_plan: nil, options: options)
-    end
-
-    def destroy
-      options = command_options.tap { |dat| dat.state = state_file }
-      Commands::Destroy.execute(dir_or_plan: nil, options: options)
-    end
-
-    def lint
-      options = command_options.tap { |dat| dat.check = true }
-      Commands::Fmt.execute(dir_or_plan: nil, options: options)
-    end
-
-    def fmt
-      Commands::Fmt.execute(dir_or_plan: nil, options: command_options)
-    end
-
-    def validate
-      Commands::Validate.execute(dir_or_plan: nil, options: command_options)
-    end
-
-    def checklist
-      Commands::Checklist.execute(dir_or_plan: nil, options: command_options)
-    end
-
-    def clean
-      removals = config.cleanup.match.map { |p| Dir.glob("**/#{p}") }
-      removals << `find . -type d -empty`.split if config.cleanup.empty
-      removals = removals.flatten.sort.uniq.each do |trash|
-        print_dot("Removing: #{trash}", :light_yellow)
-        FileUtils.rm_rf(trash)
-      end
-      puts unless removals.empty?
-    end
-
-    def plan_file_obj
-      Terraform::PlanFile.load(plan_file, options: command_options)
     end
 
     def planned?
@@ -117,27 +45,16 @@ module Terradactyl
 
     private
 
-    def decorate_cmds(*cmds)
-      cmds.each do |meth|
-        define_singleton_method(meth) do |*args|
-          setup_terraform
-          pushd(stack_path)
-          super(*args)
-        ensure
-          popd
-        end
-      end
-    end
-
     def autoinstall?
       config.terraform.autoinstall
     end
 
     def setup_terraform
       %i[version install_dir downloads_url releases_url].each do |opt|
-        VersionManager.send("#{opt}=".to_sym, config.terraform.send(opt))
+        Terraform::VersionManager.send("#{opt}=".to_sym,
+                                       config.terraform.send(opt))
       end
-      VersionManager.install if autoinstall?
+      Terraform::VersionManager.install if autoinstall?
     end
 
     def validate_stack_name(stack_name)
@@ -159,7 +76,7 @@ module Terradactyl
 
     def command_options
       subcmd = caller_locations(1, 1)[0].label.to_sym
-      Commands::Options.new do |dat|
+      Terraform::Commands::Options.new do |dat|
         dat.environment = config.environment
         dat.echo        = config.terraform.echo
         dat.quiet       = config.terraform.quiet

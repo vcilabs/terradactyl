@@ -17,7 +17,7 @@ RSpec.describe Terradactyl::CLI do
   end
 
   after(:each) do
-    silence { described_class.new.cleanall }
+    silence { described_class.new.clean_all }
   end
 
   describe 'stacks' do
@@ -58,14 +58,14 @@ RSpec.describe Terradactyl::CLI do
     end
   end
 
-  describe 'planall' do
-    command('terradactyl planall')
+  describe 'plan_all' do
+    command('terradactyl plan-all')
     its(:stdout) { is_expected.to include 'Planning ALL Stacks ...' }
     its(:exitstatus) { is_expected.to eq 0 }
   end
 
-  describe 'cleanall' do
-    command('terradactyl cleanall')
+  describe 'clean_all' do
+    command('terradactyl clean-all')
     its(:stdout) { is_expected.to include 'Cleaning ALL Stacks ...' }
     its(:exitstatus) { is_expected.to eq 0 }
   end
@@ -78,7 +78,7 @@ RSpec.describe Terradactyl::CLI do
     end
 
     context 'when the stacks have plan files' do
-      before { silence { described_class.new.planall } }
+      before { silence { described_class.new.plan_all } }
       fixture_file('.')
       command('terradactyl smartapply')
       its(:stdout) { is_expected.to include 'Total Stacks Modified: 3' }
@@ -90,7 +90,7 @@ RSpec.describe Terradactyl::CLI do
     context 'when the stacks have plan files' do
       before do
         silence do
-          described_class.new.planall
+          described_class.new.plan_all
           described_class.new.smartapply
         end
       end
@@ -101,10 +101,10 @@ RSpec.describe Terradactyl::CLI do
     end
   end
 
-  describe 'auditall' do
+  describe 'audit_all' do
     context 'without report' do
       fixture_file('.')
-      command('terradactyl auditall', allow_error: true)
+      command('terradactyl audit-all', allow_error: true)
       its(:stdout) { is_expected.to include 'Auditing ALL Stacks ...' }
       its(:exitstatus) { is_expected.to eq 1 }
     end
@@ -118,7 +118,7 @@ RSpec.describe Terradactyl::CLI do
         end
       end
       fixture_file('.')
-      command('terradactyl auditall --report', allow_error: true)
+      command('terradactyl audit-all --report', allow_error: true)
       its(:stdout) { is_expected.to include 'Auditing ALL Stacks ...' }
       its(:exitstatus)  { is_expected.to eq 1 }
       its(:has_report?) { is_expected.to be_truthy }

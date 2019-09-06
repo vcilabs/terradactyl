@@ -122,14 +122,14 @@ module Terradactyl
       plan(name)
     end
 
-    desc 'cleanall', 'Clean all stacks'
-    def cleanall
+    desc 'clean-all', 'Clean all stacks'
+    def clean_all
       print_header 'Cleaning ALL Stacks ...'
       Stacks.load.each { |stack| clean(stack) }
     end
 
-    desc 'planall', 'Plan all stacks'
-    def planall
+    desc 'plan-all', 'Plan all stacks'
+    def plan_all
       print_header 'Planning ALL Stacks ...'
       Stacks.load.each do |stack|
         catch(:error) do
@@ -140,10 +140,10 @@ module Terradactyl
       end
     end
 
-    desc 'auditall', 'Audit all stacks'
+    desc 'audit-all', 'Audit all stacks'
     options report: :optional
     method_option :report, type: :boolean
-    def auditall
+    def audit_all
       report = { start: Time.now.to_json }
       print_header 'Auditing ALL Stacks ...'
       Stacks.load.each do |stack|
@@ -157,6 +157,18 @@ module Terradactyl
       if options[:report]
         print_header 'Audit Report ...'
         generate_report(report)
+      end
+    end
+
+    desc 'validate-all', 'Validate all stacks'
+    def validate_all
+      print_header 'Validating ALL Stacks ...'
+      Stacks.load.each do |stack|
+        catch(:error) do
+          clean(stack)
+          init(stack)
+          validate(stack)
+        end
       end
     end
 
@@ -228,6 +240,19 @@ module Terradactyl
       if (stack = Stacks.dirty?(name))
         Stacks.error!(stack)
         print_crit "Dirty stack: #{stack.name}"
+      end
+    end
+
+    desc 'validate NAME', 'Validate an individual stack, by name'
+    def validate(name)
+      stack = Stack.new(name)
+      print_ok "Validating: #{stack.name}"
+      if stack.validate.zero?
+        print_ok "Validated: #{stack.name}"
+      else
+        Stacks.error!(stack)
+        print_crit "Validation failed: #{stack.name}"
+        throw :error
       end
     end
 
