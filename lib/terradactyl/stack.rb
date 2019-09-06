@@ -119,10 +119,10 @@ module Terradactyl
 
     def decorate_cmds(*cmds)
       cmds.each do |meth|
-        define_singleton_method(meth) do
+        define_singleton_method(meth) do |*args|
           setup_terraform
           pushd(stack_path)
-          super()
+          super(*args)
         ensure
           popd
         end
@@ -141,11 +141,12 @@ module Terradactyl
     end
 
     def validate_stack_name(stack_name)
-      unless (stack_name = Stacks.validate(stack_name))
-        print_crit("Stack not found: #{stack_name}")
+      klass = self.class.to_s.split('::').last
+      unless (valid_name = Stacks.validate(stack_name))
+        print_crit("#{klass} not found: #{File.basename(stack_name)}")
         abort
       end
-      stack_name
+      valid_name
     end
 
     def inject_env_vars
