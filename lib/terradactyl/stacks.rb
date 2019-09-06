@@ -46,9 +46,12 @@ module Terradactyl
       new(*args)
     end
 
+    attr_reader :filter
+
     def initialize(filter: StacksPlanFilterDefault.new)
+      @filter   = filter
       @base_dir = "#{Rake.original_dir}/#{config.base_folder}"
-      @stacks   = filter.sift(stacks_all)
+      @stacks   = @filter.sift(stacks_all)
     end
 
     def list

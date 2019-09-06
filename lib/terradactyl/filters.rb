@@ -12,6 +12,10 @@ module Terradactyl
       'A list of all stacks in the basedir'
     end
 
+    def git_cmd
+      `git ls-files .`
+    end
+
     def base_dir
       config.base_folder
     end
@@ -35,7 +39,7 @@ module Terradactyl
     end
 
     def git_cmd
-      `git --no-pager diff --name-only HEAD`
+      `git --no-pager diff --name-only HEAD .`
     end
 
     def sift(stacks)
@@ -56,7 +60,7 @@ module Terradactyl
     end
 
     def git_cmd
-      `git --no-pager diff --name-only FETCH_HEAD ORIG_HEAD`
+      `git --no-pager diff --name-only FETCH_HEAD ORIG_HEAD .`
     rescue
       String.new
     end
@@ -76,7 +80,7 @@ module Terradactyl
     end
 
     def git_cmd
-      `git --no-pager diff --name-only origin/#{current_branch}`
+      `git --no-pager diff --name-only origin/#{current_branch} .`
     rescue
       String.new
     end
