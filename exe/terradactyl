@@ -2,4 +2,10 @@
 
 require 'terradactyl'
 
+trap 'SIGINT' do
+  puts
+  puts 'Caught Interrupt. Exiting ...'
+  exit 1
+end
+
 Terradactyl::CLI.start
