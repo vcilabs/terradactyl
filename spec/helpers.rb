@@ -15,14 +15,15 @@ module Helpers
 
   def terraform_build_artifacts(stack)
     OpenStruct.new({
-      init:     "#{stack.path}/.terraform",
-      plan:     "#{stack.path}/#{stack.name}.tfout",
-      apply:    "#{stack.path}/terraform.tfstate",
-      refresh:  "#{stack.path}/terraform.tfstate.backup",
-      destroy:  "#{stack.path}/terraform.tfstate.backup",
-      lint:     "#{stack.path}/unlinted.tf",
-      validate: "#{stack.path}/invalid.tf",
-      checklist: "#{stack.path}/checklist.tf",
+      init:          "#{stack.path}/.terraform",
+      plan_file_obj: "#{stack.path}/.terraform/terradactyl.planfile.data",
+      plan:          "#{stack.path}/#{stack.name}.tfout",
+      apply:         "#{stack.path}/terraform.tfstate",
+      refresh:       "#{stack.path}/terraform.tfstate.backup",
+      destroy:       "#{stack.path}/terraform.tfstate.backup",
+      lint:          "#{stack.path}/unlinted.tf",
+      validate:      "#{stack.path}/invalid.tf",
+      checklist:     "#{stack.path}/checklist.tf",
     })
   end
 

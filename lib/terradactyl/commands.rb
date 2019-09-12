@@ -3,36 +3,50 @@
 module Terradactyl
   module Commands
     class << self
-      def extended(base)
-        terraform_methods.each { |method| decorate(base, method) }
-      end
+      def extend_by_revision(tf_version, object)
+        anon_module = revision_module
 
-      def extend_revision(tf_version, object)
-        self.include(revision_module(tf_version).include(Terraform::Commands))
-        object.extend(self)
-      end
+        anon_module.include(self)
+        anon_module.prepend(revision_constant(tf_version))
 
-      def decorate(base, method)
-        base.define_singleton_method(method) do |*args, &block|
-          setup_terraform
-          pushd(stack_path)
-          super(*args, &block)
-        ensure
-          popd
-        end
+        object.extend(anon_module)
       end
 
       private
 
-      def terraform_methods
-        public_instance_methods.reject { |meth| meth == :terraform_methods }
+      def revision_module
+        Module.new do
+          class << self
+            def extended(base)
+              terraform_methods.each { |method| decorate(base, method) }
+            end
+
+            def decorate(base, method)
+              base.define_singleton_method(method) do |*args, &block|
+                setup_terraform
+                pushd(stack_path)
+                super(*args, &block)
+              ensure
+                popd
+              end
+            end
+
+            private
+
+            def terraform_methods
+              public_instance_methods.reject { |m| m == :terraform_methods }
+            end
+          end
+        end
       end
 
-      def revision_module(tf_version)
+      def revision_constant(tf_version)
         revision_name = ['Rev', *tf_version.split('.').take(2)].join
         const_get(revision_name)
       end
     end
+
+    include Terraform::Commands
 
     def init
       Init.execute(dir_or_plan: nil, options: command_options)
@@ -40,10 +54,29 @@ module Terradactyl
 
     def plan
       options = command_options.tap do |dat|
-        dat.state = state_file
-        dat.out   = plan_file
+        dat.state    = state_file
+        dat.out      = plan_file
+        dat.no_color = true
       end
-      Plan.execute(dir_or_plan: nil, options: options)
+
+      captured = Plan.execute(dir_or_plan: nil,
+                              options: options,
+                              capture: true)
+
+      output = case captured.exitstatus
+               when 0
+                 'No changes. Infrastructure is up-to-date.'
+               when 1
+                 captured.stderr
+               when 2
+                 captured.stdout
+               end
+
+      @plan_file_obj             = load_plan_file
+      @plan_file_obj.plan_output = output
+      @plan_file_obj.save
+
+      captured.exitstatus
     end
 
     def apply
@@ -83,17 +116,34 @@ module Terradactyl
       puts unless removals.empty?
     end
 
-    def plan_file_obj
-      Terraform::PlanFile.load(plan_file, options: command_options)
+    private
+
+    def load_plan_file
+      Terraform::PlanFile.new(plan_path: plan_file, parser: parser)
     end
 
     module Rev011
+      include Terraform::Commands
+
       def checklist
         Checklist.execute(dir_or_plan: nil, options: command_options)
+      end
+
+      private
+
+      def parser
+        Terraform::Rev011::PlanFileParser
       end
     end
 
     module Rev012
+      include Terraform::Commands
+
+      private
+
+      def parser
+        Terraform::Rev012::PlanFileParser
+      end
     end
   end
 end

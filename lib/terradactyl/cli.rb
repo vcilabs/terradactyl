@@ -224,11 +224,12 @@ module Terradactyl
       when 1
         Stacks.error!(stack)
         print_crit "Plan failed: #{stack.name}"
+        stack.print_plan
         throw :error
       when 2
         Stacks.dirty!(stack)
         print_warning "Changes detected: #{stack.name}"
-        stack.show_plan_file
+        stack.print_plan
       else
         fail
       end
