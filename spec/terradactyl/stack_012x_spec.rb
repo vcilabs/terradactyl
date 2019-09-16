@@ -125,6 +125,7 @@ RSpec.describe Terradactyl::Stack do
 
           expect(stack.plan).to eq(2)
           expect(File.exist?(artifacts.plan)).to be_truthy
+          expect(File.exist?(artifacts.plan_file_obj)).to be_truthy
         end
       end
 
@@ -279,6 +280,7 @@ RSpec.describe Terradactyl::Stack do
       describe '#plan_file_obj' do
         it 'returns a PlanFile object' do
           expect(stack.plan_file_obj).to be_a(Terradactyl::Terraform::PlanFile)
+          expect(stack.plan_file_obj.exist?).to be_truthy
         end
       end
 
@@ -288,9 +290,9 @@ RSpec.describe Terradactyl::Stack do
         end
       end
 
-      describe '#show_plan_file' do
+      describe '#print_plan' do
         it 'displays the Terraform plan output' do
-          expect { stack.show_plan_file }.to output(/\+ null_resource\.#{stack_rez}/).to_stdout
+          expect { stack.print_plan }.to output(/An execution plan has been generated/).to_stdout
         end
       end
 
@@ -311,27 +313,6 @@ RSpec.describe Terradactyl::Stack do
           artifacts.each_pair do |_k, f|
             expect(File.exist?(f)).to be_falsey
           end
-        end
-      end
-    end
-
-    context 'when there is NO plan file in the stack' do
-      before(:each) do
-        silence {
-          stack.init
-        }
-      end
-
-      after(:each) do
-        silence {
-          artifacts.each_pair { |_k,v| FileUtils.rm_rf(v) if File.exist?(v) }
-          config.reload
-        }
-      end
-
-      describe '#plan_file_obj' do
-        it 'raises an error' do
-          expect {stack.plan_file_obj}.to raise_error(RuntimeError, "Error reading plan file!")
         end
       end
     end

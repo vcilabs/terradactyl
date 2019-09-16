@@ -13,7 +13,7 @@ module Terradactyl
     def initialize(stack_name)
       @stack_name   = validate_stack_name(stack_name)
       @stack_config = ConfigStack.new(@stack_name)
-      Commands.extend_revision(config.terraform.version, self)
+      Commands.extend_by_revision(config.terraform.version, self)
       inject_env_vars
     end
 
@@ -38,9 +38,12 @@ module Terradactyl
       FileUtils.rm_rf(plan_path)
     end
 
-    def show_plan_file
-      print_content(plan_file_obj.to_s)
-      print_content(plan_file_obj.summary)
+    def print_plan
+      print_content(plan_file_obj.plan_output)
+    end
+
+    def plan_file_obj
+      @plan_file_obj ||= load_plan_file
     end
 
     private
