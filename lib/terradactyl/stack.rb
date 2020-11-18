@@ -13,8 +13,14 @@ module Terradactyl
     def initialize(stack_name)
       @stack_name   = validate_stack_name(stack_name)
       @stack_config = ConfigStack.new(@stack_name)
-      Commands.extend_by_revision(config.terraform.version, self)
+      @tf_version   = tf_version
+      Commands.extend_by_revision(@tf_version, self)
+      print_message "Terraform version: #{@tf_version}"
       inject_env_vars
+    rescue NameError
+      print_crit "Unsupported Terraform version: #{@tf_version}"
+      Stacks.error!(stack_name)
+      throw :error
     end
 
     def config
@@ -52,11 +58,21 @@ module Terradactyl
       config.terraform.autoinstall
     end
 
+    def tf_version
+      begin
+        Terraform::VersionManager.resolve(config.terraform.version)
+      rescue Terraform::VersionManager::VersionManagerError
+        Terraform::VersionManager.latest
+      end
+    end
+
     def setup_terraform
-      %i[version install_dir downloads_url releases_url].each do |opt|
+      %i[install_dir downloads_url releases_url].each do |opt|
         Terraform::VersionManager.send("#{opt}=".to_sym,
                                        config.terraform.send(opt))
       end
+
+      Terraform::VersionManager.version = @tf_version
       Terraform::VersionManager.install if autoinstall?
     end
 
