@@ -145,5 +145,15 @@ module Terradactyl
         Terraform::Rev012::PlanFileParser
       end
     end
+
+    module Rev013
+      include Terraform::Commands
+
+      private
+
+      def parser
+        Terraform::Rev012::PlanFileParser
+      end
+    end
   end
 end
