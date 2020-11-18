@@ -38,7 +38,6 @@ Gem::Specification.new do |spec|
   spec.add_dependency 'terradactyl-terraform', '>= 0.3.1'
 
   spec.add_development_dependency 'rspec', '~> 3.0'
-  spec.add_development_dependency 'rspec-command', '~> 1.0'
   spec.add_development_dependency 'pry', '~> 0.12'
   spec.add_development_dependency 'rubocop', '~> 0.71.0'
 end

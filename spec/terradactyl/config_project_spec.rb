@@ -1,17 +1,20 @@
 require 'spec_helper'
 
 RSpec.describe Terradactyl::ConfigProject do
+  let(:tmpdir) { Dir.mktmpdir('rspec_terradactyl') }
+
+  before(:each) do
+    cp_fixtures(tmpdir)
+    Dir.chdir(tmpdir)
+  end
+
+  after(:each) do
+    Dir.chdir(original_work_dir)
+  end
 
   context 'when project-level config file is NOT present' do
-
-    # Step into a directory that contains no project file
     before(:each) do
-      FileUtils.cd '..'
-    end
-
-    # Restore to working directory
-    after(:each) do
-      FileUtils.cd './fixtures'
+      FileUtils.rm_rf 'terradactyl.yaml'
     end
 
     subject { Class.new(described_class).instance }
@@ -21,11 +24,9 @@ RSpec.describe Terradactyl::ConfigProject do
         expect { subject }.to raise_error(SystemExit, /Could not load.*/)
       end
     end
-
   end
 
   context 'when project-level config file _is_ present' do
-
     subject { Class.new(described_class).instance }
 
     describe '#terradactyl' do
@@ -83,7 +84,5 @@ RSpec.describe Terradactyl::ConfigProject do
         expect(subject.terraform.version).to eq(terraform_minimum)
       end
     end
-
   end
-
 end

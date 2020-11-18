@@ -1,15 +1,23 @@
 require 'spec_helper'
 
 RSpec.describe Terradactyl::Stacks do
-  let(:stack_name) { 'stack_a' }
-  let(:stack)      { Terradactyl::Stack.new(stack_name) }
-  let(:config)     { stack.config }
-  let(:artifacts)  { terraform_build_artifacts(stack) }
+  let(:stack_name)    { 'stack_a' }
+  let(:stack)         { silence { Terradactyl::Stack.new(stack_name) } }
+  let(:config)        { stack.config }
+  let(:artifacts)     { terraform_build_artifacts(stack) }
+  let(:tmpdir)        { Dir.mktmpdir('rspec_terradactyl') }
+  let(:num_of_stacks) { Dir["#{tmpdir}/stacks/*"].size }
 
   before(:each) do
     Terradactyl::Terraform::VersionManager.binaries.each do |path|
       FileUtils.rm path
     end
+    cp_fixtures(tmpdir)
+    Dir.chdir(tmpdir)
+  end
+
+  after(:each) do
+    Dir.chdir(original_work_dir)
   end
 
   after(:all) do
@@ -26,7 +34,7 @@ RSpec.describe Terradactyl::Stacks do
     describe '#list' do
       it 'displays a list of Terraform stacks' do
         expect(subject.list).to be_a(Array)
-        expect(subject.list.size).to eq(3)
+        expect(subject.list.size).to eq(num_of_stacks)
       end
     end
 
@@ -45,7 +53,7 @@ RSpec.describe Terradactyl::Stacks do
 
     describe '#size' do
       it 'displays the num of stacks' do
-        expect(subject.size).to eq(3)
+        expect(subject.size).to eq(num_of_stacks)
       end
     end
 

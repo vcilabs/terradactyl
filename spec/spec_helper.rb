@@ -1,17 +1,11 @@
 require_relative 'helpers'
 
-working_dir = File.dirname(__FILE__)
-FileUtils.cd(File.join(working_dir, 'fixtures'))
-
-require 'rspec_command'
 require 'pry'
+require 'open3'
 require 'bundler/setup'
 require 'terradactyl'
 
 RSpec.configure do |config|
-  # Load the exra RSpec libs
-  config.include RSpecCommand
-
   # Load the Helpers
   config.include Helpers
 

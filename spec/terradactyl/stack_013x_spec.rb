@@ -1,9 +1,9 @@
 require 'spec_helper'
 
 RSpec.describe Terradactyl::Stack do
-  context 'when Terraform version is 0.12.x' do
-    let(:stack_name) { 'stack_b' }
-    let(:stack_rez)  { 'bar' }
+  context 'when Terraform version is 0.13.x' do
+    let(:stack_name) { 'stack_d' }
+    let(:stack_rez)  { 'bingo' }
     let(:stack)      { silence { Terradactyl::Stack.new(stack_name) } }
     let(:config)     { stack.config }
     let(:artifacts)  { terraform_build_artifacts(stack) }

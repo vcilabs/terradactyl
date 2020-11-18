@@ -2,13 +2,6 @@ require 'spec_helper'
 
 RSpec.describe Terradactyl::CLI do
 
-  # Fixtures to copy, the whole working directory
-  fixture_file('.')
-
-  # Sets the parent directory for rspec-command
-  # - useful for testing
-  # let(:temp_path) { 'tmp' }
-
   let(:unlinted) do
     <<~LINT_ME
       resource "null_resource" "unlinted"
@@ -16,73 +9,134 @@ RSpec.describe Terradactyl::CLI do
     LINT_ME
   end
 
-  after(:each) do
-    silence { described_class.new.clean_all }
+  let(:tmpdir) { Dir.mktmpdir('rspec_terradactyl') }
+
+  let(:num_of_stacks) { Dir["#{tmpdir}/stacks/*"].size }
+
+  before(:each) do
+    cp_fixtures(tmpdir)
   end
 
   describe 'stacks' do
-    command('terradactyl stacks')
-    its(:stdout) { is_expected.to include '* stack_a' }
-    its(:exitstatus) { is_expected.to eq 0 }
+    let(:command) do
+      exe('terradactyl stacks', tmpdir)
+    end
+
+    it 'displays a list of Terraform stacks' do
+      expect(command.stdout).to include '* stack_a'
+      expect(command.exitstatus).to eq(0)
+    end
   end
 
   describe 'version' do
-    command('terradactyl version')
-    its(:stdout) { is_expected.to include "version: #{Terradactyl::VERSION}" }
-    its(:exitstatus) { is_expected.to eq 0 }
+    let(:command) do
+      exe('terradactyl version', tmpdir)
+    end
+
+    it 'displays the Terradactyl version' do
+      expect(command.stdout).to include "version: #{Terradactyl::VERSION}"
+      expect(command.exitstatus).to eq(0)
+    end
   end
 
   describe 'quickplan' do
     context 'with no args' do
-      command('terradactyl quickplan', allow_error: true)
-      its(:stderr) { is_expected.to match /ERROR.* was called with no arguments/ }
-      its(:exitstatus) { is_expected.to eq 1 }
+      let(:command) do
+        exe('terradactyl quickplan', tmpdir)
+      end
+
+      it 'displays an arg error' do
+        expect(command.stderr).to match /ERROR.* was called with no arguments/
+        expect(command.exitstatus).to eq(1)
+      end
     end
 
     context 'with invalid stack_name' do
-      command('terradactyl quickplan foo', allow_error: true)
-      its(:stdout) { is_expected.to include 'Stack not found' }
-      its(:exitstatus) { is_expected.to eq 1 }
+      let(:command) do
+        exe('terradactyl quickplan foo', tmpdir)
+      end
+
+      it 'displays not found error' do
+        expect(command.stdout).to include 'Stack not found'
+        expect(command.exitstatus).to eq(1)
+      end
     end
 
     context 'with valid stack_name' do
-      command('terradactyl quickplan stack_a')
-      its(:stdout) { is_expected.to include 'Plan: 1 to add, 0 to change, 0 to destroy.' }
-      its(:exitstatus) { is_expected.to eq 0 }
+      let(:command) do
+        exe('terradactyl quickplan stack_a', tmpdir)
+      end
+
+      it 'displays a plan' do
+        expect(command.stdout).to include 'Plan: 1 to add, 0 to change, 0 to destroy.'
+        expect(command.exitstatus).to eq(0)
+      end
     end
 
     context 'with valid relative path' do
-      command('terradactyl quickplan stacks/stack_a')
-      its(:stdout) { is_expected.to include 'Plan: 1 to add, 0 to change, 0 to destroy.' }
-      its(:exitstatus) { is_expected.to eq 0 }
+      let(:command) do
+        exe('terradactyl quickplan stacks/stack_a', tmpdir)
+      end
+
+      it 'displays a plan' do
+        expect(command.stdout).to include 'Plan: 1 to add, 0 to change, 0 to destroy.'
+        expect(command.exitstatus).to eq(0)
+      end
     end
   end
 
   describe 'plan_all' do
-    command('terradactyl plan-all')
-    its(:stdout) { is_expected.to include 'Planning ALL Stacks ...' }
-    its(:exitstatus) { is_expected.to eq 0 }
+    let(:command) do
+      exe('terradactyl plan-all', tmpdir)
+    end
+
+    it 'plans multiple stacks' do
+      expect(command.stdout).to include 'Planning ALL Stacks ...'
+      expect(command.exitstatus).to eq(0)
+    end
   end
 
   describe 'clean_all' do
-    command('terradactyl clean-all')
-    its(:stdout) { is_expected.to include 'Cleaning ALL Stacks ...' }
-    its(:exitstatus) { is_expected.to eq 0 }
+    let(:command) do
+      exe('terradactyl clean-all', tmpdir)
+    end
+
+    it 'cleans multiple stacks' do
+      expect(command.stdout).to include 'Cleaning ALL Stacks ...'
+      expect(command.exitstatus).to eq(0)
+    end
   end
 
   describe 'smartapply' do
     context 'when no plan files are present' do
-      command('terradactyl smartapply')
-      its(:stdout) { is_expected.to include 'No stacks contain plan files ...' }
-      its(:exitstatus) { is_expected.to eq 0 }
+      let(:command) do
+        exe('terradactyl smartapply', tmpdir)
+      end
+
+      it 'applies NO stacks' do
+        expect(command.stdout).to include 'No stacks contain plan files ...'
+        expect(command.exitstatus).to eq(0)
+      end
     end
 
     context 'when the stacks have plan files' do
-      before { silence { described_class.new.plan_all } }
-      fixture_file('.')
-      command('terradactyl smartapply')
-      its(:stdout) { is_expected.to include 'Total Stacks Modified: 3' }
-      its(:exitstatus) { is_expected.to eq 0 }
+      before do
+        silence do
+          pwd = Dir.pwd
+          Dir.chdir tmpdir
+          described_class.new.plan_all
+          Dir.chdir pwd
+        end
+      end
+
+      let(:command) do
+        exe('terradactyl smartapply', tmpdir)
+      end
+
+      it 'applies multiple stacks' do
+        expect(command.stdout).to include "Total Stacks Modified: #{num_of_stacks}"
+        expect(command.exitstatus).to eq(0)
+      end
     end
   end
 
@@ -90,61 +144,93 @@ RSpec.describe Terradactyl::CLI do
     context 'when the stacks have plan files' do
       before do
         silence do
+          pwd = Dir.pwd
+          Dir.chdir tmpdir
           described_class.new.plan_all
           described_class.new.smartapply
+          Dir.chdir pwd
         end
       end
-      fixture_file('.')
-      command('terradactyl smartrefresh')
-      its(:stdout) { is_expected.to include 'Total Stacks Refreshed: 3' }
-      its(:exitstatus) { is_expected.to eq 0 }
+
+      let(:command) do
+        exe('terradactyl smartrefresh', tmpdir)
+      end
+
+      it 'refreshes multiple stacks' do
+        expect(command.stdout).to include "Total Stacks Refreshed: #{num_of_stacks}"
+        expect(command.exitstatus).to eq(0)
+      end
     end
   end
 
   describe 'audit_all' do
-    context 'without report' do
-      fixture_file('.')
-      command('terradactyl audit-all', allow_error: true)
-      its(:stdout) { is_expected.to include 'Auditing ALL Stacks ...' }
-      its(:exitstatus) { is_expected.to eq 1 }
+    context 'without report flag' do
+      let(:command) do
+        exe('terradactyl audit-all', tmpdir)
+      end
+
+      it 'audits all stacks' do
+        expect(command.stdout).to include 'Auditing ALL Stacks ...'
+        expect(command.exitstatus).to eq(1)
+      end
     end
 
-    context 'with report' do
-      module Mixlib
-        class ShellOut
-          def has_report?
-            File.exist?("#{cwd}/stacks.audit.json")
-          end
-        end
+    context 'with report flag' do
+      let(:command) do
+        exe('terradactyl audit-all  --report', tmpdir)
       end
-      fixture_file('.')
-      command('terradactyl audit-all --report', allow_error: true)
-      its(:stdout) { is_expected.to include 'Auditing ALL Stacks ...' }
-      its(:exitstatus)  { is_expected.to eq 1 }
-      its(:has_report?) { is_expected.to be_truthy }
+
+      let(:report) do
+        "#{tmpdir}/stacks.audit.json"
+      end
+
+      it 'audits all stacks and produces a report' do
+        expect(command.stdout).to include 'Auditing ALL Stacks ...'
+        expect(command.exitstatus).to eq(1)
+        expect(File.exist?(report)).to be_truthy
+      end
     end
   end
 
   describe 'lint' do
     context 'stack requires no formatting' do
-      command('terradactyl lint stack_a')
-      its(:stdout) { is_expected.to include 'Formatting OK' }
-      its(:exitstatus) { is_expected.to eq 0 }
+      let(:command) do
+        exe('terradactyl lint stack_a', tmpdir)
+      end
+
+      it 'does nothing' do
+        expect(command.stdout).to include 'Formatting OK'
+        expect(command.exitstatus).to eq(0)
+      end
     end
 
     context 'stack requires formatting' do
-      file 'stacks/stack_a/unlinted.tf' do
-         unlinted
+      before do
+        pwd = Dir.pwd
+        Dir.chdir tmpdir
+        File.write('stacks/stack_a/unlinted.tf', unlinted)
+        Dir.chdir pwd
       end
-      command('terradactyl lint stack_a', allow_error: true)
-      its(:stdout) { is_expected.to include 'Bad Formatting' }
-      its(:exitstatus) { is_expected.to eq 1 }
+
+      let(:command) do
+        exe('terradactyl lint stack_a', tmpdir)
+      end
+
+      it 'displays a formatting error' do
+        expect(command.stdout).to include 'Bad Formatting'
+        expect(command.exitstatus).to eq(1)
+      end
     end
   end
 
   describe 'fmt' do
-    command('terradactyl fmt stack_a')
-    its(:stdout) { is_expected.to include 'Formatted' }
-    its(:exitstatus) { is_expected.to eq 0 }
+    let(:command) do
+      exe('terradactyl fmt stack_a', tmpdir)
+    end
+
+    it 'displays a formatting error' do
+      expect(command.stdout).to include 'Formatted'
+      expect(command.exitstatus).to eq(0)
+    end
   end
 end

@@ -4,7 +4,7 @@ RSpec.describe Terradactyl::Stack do
   context 'when Terraform version is 0.11.x' do
     let(:stack_name) { 'stack_a' }
     let(:stack_rez)  { 'foo' }
-    let(:stack)      { Terradactyl::Stack.new(stack_name) }
+    let(:stack)      { silence { Terradactyl::Stack.new(stack_name) } }
     let(:config)     { stack.config }
     let(:artifacts)  { terraform_build_artifacts(stack) }
     let(:unlinted) do
@@ -43,6 +43,17 @@ RSpec.describe Terradactyl::Stack do
 
     let(:inventory_error_msg) do
       Terradactyl::Terraform::VersionManager::Inventory::ERROR_VERSION_MISSING
+    end
+
+    let(:tmpdir) { Dir.mktmpdir('rspec_terradactyl') }
+
+    before(:each) do
+      cp_fixtures(tmpdir)
+      Dir.chdir(tmpdir)
+    end
+
+    after(:each) do
+      Dir.chdir(original_work_dir)
     end
 
     before(:all) do
@@ -97,7 +108,7 @@ RSpec.describe Terradactyl::Stack do
             "#{stack.config.terraform.install_dir}/terraform-#{tf_version}"
           end
 
-          it 'fails to execute' do
+          it 'executes sucessfully' do
             stack.config.terraform.autoinstall = true
             expect(stack.init).to be_zero
             expect(File.exist?(tf_binary)).to be_truthy
