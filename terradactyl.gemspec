@@ -6,29 +6,24 @@ Gem::Specification.new do |spec|
   spec.name          = "terradactyl"
   spec.version       = Terradactyl::VERSION
   spec.authors       = ["Brian Warsing"]
-  spec.email         = ["brian.warsing@visioncritical.com"]
+  spec.email         = ["brian.warsing@alida.com"]
 
   spec.summary       = %{Manage a Terraform monorepo}
   spec.description   = %{Provides facility to manage a large Terraform monorepo}
-  spec.homepage      = %{https://git.vcilabs.com/CloudEng/terradactyl}
+  spec.homepage      = %{https://github.com/vcilabs/terradactyl}
 
-  if spec.respond_to?(:metadata)
-    spec.metadata['allowed_push_host'] = 'http://gems.media.service.consul:8808'
-  else
-    raise 'RubyGems 2.0 or newer is required to protect against ' \
-      'public gem pushes.'
-  end
+  spec.metadata['allowed_push_host'] = 'https://rubygems.org'
 
   spec.required_ruby_version = '>= 2.5.0'
 
-  spec.files         = `git ls-files -z`.split("\x0").reject do |f|
+  spec.files = `git ls-files -z`.split("\x0").reject do |f|
     f.match(%r{^(test|spec|features)/})
   end
+
   spec.bindir        = 'exe'
   spec.executables   = spec.files.grep(%r{^exe/}) { |f| File.basename(f) }
   spec.require_paths = ['lib']
 
-  spec.add_dependency 'rubyzip', '>= 1.0.0'
   spec.add_dependency 'thor', '~> 0.20'
   spec.add_dependency 'colorize', '~> 0.8'
   spec.add_dependency 'deepsort', '~> 0.4'
@@ -39,5 +34,7 @@ Gem::Specification.new do |spec|
 
   spec.add_development_dependency 'rspec', '~> 3.0'
   spec.add_development_dependency 'pry', '~> 0.12'
+  spec.add_development_dependency 'pry-remote', '~> 0.1.8'
   spec.add_development_dependency 'rubocop', '~> 0.71.0'
 end
+
