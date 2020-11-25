@@ -1,5 +1,8 @@
 # Terradactyl
 
+[![Gem Version](https://badge.fury.io/rb/terradactyl.svg)](https://badge.fury.io/rb/terradactyl)
+![Build Status](https://github.com/vcilabs/terradactyl/workflows/Build%20Status/badge.svg)
+
 Gem that provides a useful CLI interface for managing a Terraform monorepo.
 
 ## Installation

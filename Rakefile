@@ -45,6 +45,11 @@ def resultant_gem
   "#{BUILD_DIR}/#{name}-#{version}.gem"
 end
 
+desc "Lint gem"
+task :lint do
+  exit(execute('bundle exec rubocop lib'))
+end
+
 desc "Build gem"
 task :build do
   bundler.build_gem

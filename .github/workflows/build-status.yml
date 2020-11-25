@@ -1,0 +1,26 @@
+name: Build Status
+
+on:
+  push:
+    branches:
+      - main
+
+# Using the Ruby teams https://github.com/ruby/setup-ruby, not the Github
+# team's https://github.com/actions/setup-ruby
+
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Git clone
+        uses: actions/checkout@v2
+        with:
+          fetch-depth: 2
+      - name: Setup Ruby
+        uses: ruby/setup-ruby@v1
+        with:
+          ruby-version: '2.7'
+          bundler-cache: true
+      - name: Run tests
+        id: test
+        run: bundle exec rake spec
