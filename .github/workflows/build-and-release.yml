@@ -1,0 +1,58 @@
+name: Build and Release
+
+on:
+  push:
+    branches:
+      - main
+    paths:
+      - lib/terradactyl/version.rb
+
+# Using the Ruby teams https://github.com/ruby/setup-ruby, not the Github
+# team's https://github.com/actions/setup-ruby
+
+jobs:
+  release:
+    env:
+      GEM_NAME: terradactyl
+      VERSION_FILE: lib/terradactyl/version.rb
+      CHANGELOG: CHANGELOG.md
+      GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      GEM_HOST_API_KEY: ${{ secrets.VCILABS_GEM_HOST_API_KEY }}
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v2
+      - name: Setup Ruby
+        uses: ruby/setup-ruby@v1
+        with:
+          ruby-version: '2.7'
+          bundler-cache: true
+      - name: Build Gem
+        id: build
+        run: |
+          RELEASE_VERSION=$(grep VERSION ${VERSION_FILE} | tr -d "VERSION= \'")
+          RELEASE_BODY_PATH=body.md
+          echo RELEASE_VERSION=${RELEASE_VERSION}     >> $GITHUB_ENV
+          echo RELEASE_BODY_PATH=${RELEASE_BODY_PATH} >> $GITHUB_ENV
+          sed -ne "/## ${RELEASE_VERSION}.*/,/#/p" ${CHANGELOG} | sed -e '$d' > $RELEASE_BODY_PATH
+          gem build
+      - name: Create Release
+        id: release
+        uses: actions/create-release@v1
+        with:
+          tag_name: v${{ env.RELEASE_VERSION }}
+          release_name: v${{ env.RELEASE_VERSION }}
+          body_path: ${{ env.RELEASE_BODY_PATH }}
+          draft: false
+          prerelease: false
+      - name: Upload Asset
+        id: asset
+        uses: actions/upload-release-asset@v1
+        with:
+          upload_url: ${{ steps.release.outputs.upload_url }}
+          asset_path: ${{ env.GEM_NAME }}-${{ env.RELEASE_VERSION}}.gem
+          asset_name: ${{ env.GEM_NAME }}-${{ env.RELEASE_VERSION}}.gem
+          asset_content_type: application/x-tar
+      - name: Publish Gem
+        id: publish
+        run: gem push ${{ env.GEM_NAME }}-${{ env.RELEASE_VERSION}}.gem
