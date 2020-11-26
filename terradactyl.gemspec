@@ -3,17 +3,18 @@ $LOAD_PATH.unshift(lib) unless $LOAD_PATH.include?(lib)
 require 'terradactyl/version'
 
 Gem::Specification.new do |spec|
-  spec.name          = "terradactyl"
-  spec.version       = Terradactyl::VERSION
-  spec.authors       = ["Brian Warsing"]
-  spec.email         = ["brian.warsing@alida.com"]
-  spec.license       = 'MIT'
-  spec.summary       = %{Manage a Terraform monorepo}
-  spec.description   = %{Provides facility to manage a large Terraform monorepo}
-  spec.homepage      = %{https://github.com/vcilabs/terradactyl}
-  spec.sourcecode    = %{https://github.com/vcilabs/terradactyl}
-  spec.changelog_uri = %{https://github.com/vcilabs/terradactyl/CHANGELOG.md}
+  spec.name        = "terradactyl"
+  spec.version     = Terradactyl::VERSION
+  spec.authors     = ["Brian Warsing"]
+  spec.email       = ["brian.warsing@alida.com"]
+  spec.license     = 'MIT'
+  spec.summary     = %{Manage a Terraform monorepo}
+  spec.description = %{Provides facility to manage a large Terraform monorepo}
+  spec.homepage    = %{https://github.com/vcilabs/terradactyl}
 
+  spec.metadata['homepage_uri']      = spec.homepage
+  spec.metadata['source_code_uri']   = spec.homepage
+  spec.metadata['changelog_uri']     = %{#{spec.homepage}/CHANGELOG.md}
   spec.metadata['allowed_push_host'] = 'https://rubygems.org'
 
   spec.required_ruby_version = '>= 2.5.0'
