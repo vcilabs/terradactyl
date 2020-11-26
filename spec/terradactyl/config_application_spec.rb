@@ -70,7 +70,7 @@ RSpec.describe Terradactyl::ConfigApplication do
         expect(instance.terraform).to be_a(OpenStruct)
         expect(instance.terraform.binary).to be_nil
         expect(instance.terraform.version).to be_nil
-        expect(instance.terraform.autoinstall).to be_nil
+        expect(instance.terraform.autoinstall).to be_truthy
         expect(instance.terraform.install_dir).to be_nil
       end
 

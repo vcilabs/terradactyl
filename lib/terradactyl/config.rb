@@ -9,7 +9,7 @@ module Terradactyl
         terraform:
           binary:
           version:
-          autoinstall:
+          autoinstall: true
           install_dir:
           echo: false
           quiet: true
