@@ -1,6 +1,7 @@
 # frozen_string_literal: true
 
 module Terradactyl
+  # rubocop:disable Metrics/ClassLength
   class CLI < Thor
     include Common
     def self.exit_on_failure?
@@ -64,7 +65,7 @@ module Terradactyl
 
     desc 'version', 'Print version'
     def version
-      print_message 'version: %s' % Terradactyl::VERSION
+      print_message format('version: %<semver>s', semver: Terradactyl::VERSION)
     end
 
     #################################################################
@@ -160,6 +161,7 @@ module Terradactyl
     desc 'audit-all', 'Audit all stacks'
     options report: :optional
     method_option :report, type: :boolean
+    # rubocop:disable Metrics/AbcSize
     def audit_all
       report = { start: Time.now.to_json }
       print_header 'Auditing ALL Stacks ...'
@@ -177,6 +179,7 @@ module Terradactyl
         generate_report(report)
       end
     end
+    # rubocop:enable Metrics/AbcSize
 
     desc 'validate-all', 'Validate all stacks'
     def validate_all
@@ -234,6 +237,7 @@ module Terradactyl
     end
 
     desc 'plan NAME', 'Plan an individual stack, by name'
+    # rubocop:disable Metrics/AbcSize
     def plan(name)
       @stack ||= Stack.new(name)
       print_ok "Planning: #{@stack.name}"
@@ -250,14 +254,15 @@ module Terradactyl
         print_warning "Changes detected: #{@stack.name}"
         @stack.print_plan
       else
-        fail
+        raise
       end
     end
+    # rubocop:enable Metrics/AbcSize
 
     desc 'audit NAME', 'Audit an individual stack, by name'
     def audit(name)
       plan(name)
-      if (stack = Stacks.dirty?(name))
+      if (@stack = Stacks.dirty?(name))
         Stacks.error!(@stack)
         print_crit "Dirty stack: #{@stack.name}"
       end
@@ -326,4 +331,5 @@ module Terradactyl
       end
     end
   end
+  # rubocop:enable Metrics/ClassLength
 end

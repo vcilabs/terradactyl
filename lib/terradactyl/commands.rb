@@ -106,6 +106,7 @@ module Terradactyl
       Validate.execute(dir_or_plan: nil, options: command_options)
     end
 
+    # rubocop:disable Metrics/AbcSize
     def clean
       removals = config.cleanup.match.map { |p| Dir.glob("**/#{p}") }
       removals << `find . -type d -empty`.split if config.cleanup.empty
@@ -115,6 +116,7 @@ module Terradactyl
       end
       puts unless removals.empty?
     end
+    # rubocop:enable Metrics/AbcSize
 
     private
 

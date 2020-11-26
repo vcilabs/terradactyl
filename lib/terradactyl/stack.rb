@@ -59,11 +59,9 @@ module Terradactyl
     end
 
     def tf_version
-      begin
-        Terraform::VersionManager.resolve(config.terraform.version)
-      rescue Terraform::VersionManager::VersionManagerError
-        Terraform::VersionManager.latest
-      end
+      Terraform::VersionManager.resolve(config.terraform.version)
+    rescue Terraform::VersionManager::VersionManagerError
+      Terraform::VersionManager.latest
     end
 
     def setup_terraform
@@ -93,6 +91,7 @@ module Terradactyl
       ENV['TF_CLI_ARGS'] = args.compact.flatten.uniq.join(',')
     end
 
+    # rubocop:disable Metrics/AbcSize
     def command_options
       subcmd = caller_locations(1, 1)[0].label.to_sym
       Terraform::Commands::Options.new do |dat|
@@ -104,6 +103,7 @@ module Terradactyl
         end
       end
     end
+    # rubocop:enable Metrics/AbcSize
 
     def pushd(path)
       @working_dir_last = Dir.pwd

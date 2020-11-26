@@ -57,7 +57,7 @@ module Terradactyl
     def to_h
       @config
     end
-    alias_method :to_hash, :to_h
+    alias to_hash to_h
 
     private
 
@@ -145,8 +145,8 @@ module Terradactyl
       load_config
     end
 
-    alias_method :name, :stack_name
-    alias_method :path, :stack_path
+    alias name stack_name
+    alias path stack_path
 
     def state_file
       'terraform.tfstate'
