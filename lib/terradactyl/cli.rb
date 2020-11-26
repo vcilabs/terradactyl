@@ -49,6 +49,11 @@ module Terradactyl
     # * These tasks are used regularly against stacks, by name.
     #################################################################
 
+    desc 'defaults', 'Print the compiled configuration'
+    def defaults
+      puts config.to_h.to_yaml
+    end
+
     desc 'stacks', 'List the stacks'
     def stacks
       print_ok 'Stacks:'

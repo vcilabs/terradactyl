@@ -17,6 +17,17 @@ RSpec.describe Terradactyl::CLI do
     cp_fixtures(tmpdir)
   end
 
+  describe 'defaults' do
+    let(:command) do
+      exe('terradactyl defaults', tmpdir)
+    end
+
+    it 'displays the compiled Terradactyl configuration' do
+      expect(command.stdout).to include 'base_folder: stacks'
+      expect(command.exitstatus).to eq(0)
+    end
+  end
+
   describe 'stacks' do
     let(:command) do
       exe('terradactyl stacks', tmpdir)
