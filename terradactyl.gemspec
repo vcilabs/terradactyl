@@ -7,10 +7,12 @@ Gem::Specification.new do |spec|
   spec.version       = Terradactyl::VERSION
   spec.authors       = ["Brian Warsing"]
   spec.email         = ["brian.warsing@alida.com"]
-
+  spec.license       = 'MIT'
   spec.summary       = %{Manage a Terraform monorepo}
   spec.description   = %{Provides facility to manage a large Terraform monorepo}
   spec.homepage      = %{https://github.com/vcilabs/terradactyl}
+  spec.sourcecode    = %{https://github.com/vcilabs/terradactyl}
+  spec.changelog_uri = %{https://github.com/vcilabs/terradactyl/CHANGELOG.md}
 
   spec.metadata['allowed_push_host'] = 'https://rubygems.org'
 
