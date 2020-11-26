@@ -28,7 +28,6 @@ module Terradactyl
             parallelism: 5
             force: true
         environment:
-          AWS_REGION: us-west-2
           TF_PLUGIN_CACHE_DIR: ~/.terraform.d/plugins
         misc:
           utf8: true
