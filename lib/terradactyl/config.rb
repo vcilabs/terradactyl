@@ -5,7 +5,7 @@ module Terradactyl
     CONFIG_DEFAULTS = <<~CONFIG_DEFAULTS
       ---
       terradactyl:
-        base_folder: default
+        base_folder: stacks
         terraform:
           binary:
           version:
