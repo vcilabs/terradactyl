@@ -36,7 +36,6 @@ module Terradactyl
         cleanup:
           empty: true
           match:
-            - "*.tfstate*"
             - "*.tfout"
             - "*.tflock"
             - "*.zip"
