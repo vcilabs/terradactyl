@@ -1,5 +1,5 @@
 module Helpers
-
+  @@original_cwd    = File.dirname(__FILE__)
   @@original_stderr = $stderr
   @@original_stdout = $stdout
 
@@ -39,6 +39,39 @@ module Helpers
       validate: "#{stack_path}/invalid.tf",
       checklist: "#{stack_path}/checklist.tf",
     })
+  end
+
+  def original_work_dir
+    @@original_cwd
+  end
+
+  def fixtures_dir
+    File.join(original_work_dir, 'fixtures')
+  end
+
+  def cp_fixtures(tmpdir)
+    raise unless Dir.exist?(tmpdir)
+    cleanup = Dir.glob("#{tmpdir}/*", File::FNM_DOTMATCH).reject do |f|
+      File.basename(f) =~ /^\.{1,2}$/
+    end
+    FileUtils.rm_rf(cleanup)
+    FileUtils.cp_r("#{fixtures_dir}/.", tmpdir,  remove_destination: true)
+  end
+
+  def exe(cmd, working_dir)
+    pwd = Dir.pwd
+    cmd = %{bundle exec #{cmd}}
+    Dir.chdir(working_dir)
+    result = capture3(ENV, cmd)
+    Dir.chdir(pwd)
+    result
+  end
+
+  def capture3(env, cmd)
+    results = %w[stdout stderr status].zip(Open3.capture3(env, *cmd))
+    OpenStruct.new(Hash[results]).tap do |dat|
+      dat.exitstatus = dat.status.exitstatus
+    end
   end
 
   def silence(&block)

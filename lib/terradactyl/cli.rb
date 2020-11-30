@@ -1,6 +1,7 @@
 # frozen_string_literal: true
 
 module Terradactyl
+  # rubocop:disable Metrics/ClassLength
   class CLI < Thor
     include Common
     def self.exit_on_failure?
@@ -49,17 +50,22 @@ module Terradactyl
     # * These tasks are used regularly against stacks, by name.
     #################################################################
 
+    desc 'defaults', 'Print the compiled configuration'
+    def defaults
+      puts config.to_h.to_yaml
+    end
+
     desc 'stacks', 'List the stacks'
     def stacks
       print_ok 'Stacks:'
-      Stacks.load.each do |stack|
-        print_dot stack.to_s
+      Stacks.load.each do |name|
+        print_dot name.to_s
       end
     end
 
     desc 'version', 'Print version'
     def version
-      print_message 'version: %s' % Terradactyl::VERSION
+      print_message format('version: %<semver>s', semver: Terradactyl::VERSION)
     end
 
     #################################################################
@@ -72,10 +78,11 @@ module Terradactyl
     def planpr
       print_header 'SmartPlanning PR ...'
       stacks = Stacks.load(filter: StacksPlanFilterGitDiffOriginBranch.new)
-      validate_planpr(stacks).each do |stack|
-        clean(stack)
-        init(stack)
-        plan(stack)
+      validate_planpr(stacks).each do |name|
+        clean(name)
+        init(name)
+        plan(name)
+        @stack = nil
       end
     end
 
@@ -83,10 +90,11 @@ module Terradactyl
     def smartplan
       print_header 'SmartPlanning Stacks ...'
       stacks = Stacks.load(filter: StacksPlanFilterGitDiffHead.new)
-      validate_smartplan(stacks).each do |stack|
-        clean(stack)
-        init(stack)
-        plan(stack)
+      validate_smartplan(stacks).each do |name|
+        clean(name)
+        init(name)
+        plan(name)
+        @stack = nil
       end
     end
 
@@ -95,7 +103,10 @@ module Terradactyl
       print_header 'SmartApplying Stacks ...'
       stacks = Stacks.load(filter: StacksApplyFilterPrePlanned.new)
       print_warning 'No stacks contain plan files ...' unless stacks.any?
-      stacks.each { |stack| apply(stack) }
+      stacks.each do |name|
+        apply(name)
+        @stack = nil
+      end
       print_message "Total Stacks Modified: #{stacks.size}"
     end
 
@@ -104,7 +115,10 @@ module Terradactyl
       print_header 'SmartRefreshing Stacks ...'
       stacks = Stacks.load(filter: StacksApplyFilterPrePlanned.new)
       print_warning 'No stacks contain plan files ...' unless stacks.any?
-      stacks.each { |stack| refresh(stack) }
+      stacks.each do |name|
+        refresh(name)
+        @stack = nil
+      end
       print_message "Total Stacks Refreshed: #{stacks.size}"
     end
 
@@ -125,33 +139,39 @@ module Terradactyl
     desc 'clean-all', 'Clean all stacks'
     def clean_all
       print_header 'Cleaning ALL Stacks ...'
-      Stacks.load.each { |stack| clean(stack) }
+      Stacks.load.each do |name|
+        clean(name)
+        @stack = nil
+      end
     end
 
     desc 'plan-all', 'Plan all stacks'
     def plan_all
       print_header 'Planning ALL Stacks ...'
-      Stacks.load.each do |stack|
+      Stacks.load.each do |name|
         catch(:error) do
-          clean(stack)
-          init(stack)
-          plan(stack)
+          clean(name)
+          init(name)
+          plan(name)
         end
+        @stack = nil
       end
     end
 
     desc 'audit-all', 'Audit all stacks'
     options report: :optional
     method_option :report, type: :boolean
+    # rubocop:disable Metrics/AbcSize
     def audit_all
       report = { start: Time.now.to_json }
       print_header 'Auditing ALL Stacks ...'
-      Stacks.load.each do |stack|
+      Stacks.load.each do |name|
         catch(:error) do
-          clean(stack)
-          init(stack)
-          audit(stack)
+          clean(name)
+          init(name)
+          audit(name)
         end
+        @stack = nil
       end
       report[:finish] = Time.now.to_json
       if options[:report]
@@ -159,16 +179,18 @@ module Terradactyl
         generate_report(report)
       end
     end
+    # rubocop:enable Metrics/AbcSize
 
     desc 'validate-all', 'Validate all stacks'
     def validate_all
       print_header 'Validating ALL Stacks ...'
-      Stacks.load.each do |stack|
+      Stacks.load.each do |name|
         catch(:error) do
-          clean(stack)
-          init(stack)
-          validate(stack)
+          clean(name)
+          init(name)
+          validate(name)
         end
+        @stack = nil
       end
     end
 
@@ -179,90 +201,92 @@ module Terradactyl
 
     desc 'lint NAME', 'Lint an individual stack, by name'
     def lint(name)
-      stack = Stack.new(name)
-      print_ok "Linting: #{stack.name}"
-      if stack.lint.zero?
-        print_ok "Formatting OK: #{stack.name}"
+      @stack ||= Stack.new(name)
+      print_ok "Linting: #{@stack.name}"
+      if @stack.lint.zero?
+        print_ok "Formatting OK: #{@stack.name}"
       else
-        Stacks.error!(stack)
-        print_warning "Bad Formatting: #{stack.name}"
+        Stacks.error!(@stack)
+        print_warning "Bad Formatting: #{@stack.name}"
       end
     end
 
     desc 'fmt NAME', 'Format an individual stack, by name'
     def fmt(name)
-      stack = Stack.new(name)
-      print_warning "Formatting: #{stack.name}"
-      if stack.fmt.zero?
-        print_ok "Formatted: #{stack.name}"
+      @stack ||= Stack.new(name)
+      print_warning "Formatting: #{@stack.name}"
+      if @stack.fmt.zero?
+        print_ok "Formatted: #{@stack.name}"
       else
-        Stacks.error!(stack)
-        print_crit "Formatting failed: #{stack.name}"
+        Stacks.error!(@stack)
+        print_crit "Formatting failed: #{@stack.name}"
       end
     end
 
     desc 'init NAME', 'Init an individual stack, by name'
     def init(name)
-      stack = Stack.new(name)
-      print_ok "Initializing: #{stack.name}"
-      if stack.init.zero?
-        print_ok "Initialized: #{stack.name}"
+      @stack ||= Stack.new(name)
+      print_ok "Initializing: #{@stack.name}"
+      if @stack.init.zero?
+        print_ok "Initialized: #{@stack.name}"
       else
-        Stacks.error!(stack)
-        print_crit "Initialization failed: #{stack.name}"
+        Stacks.error!(@stack)
+        print_crit "Initialization failed: #{@stack.name}"
         throw :error
       end
     end
 
     desc 'plan NAME', 'Plan an individual stack, by name'
+    # rubocop:disable Metrics/AbcSize
     def plan(name)
-      stack = Stack.new(name)
-      print_ok "Planning: #{stack.name}"
-      case stack.plan
+      @stack ||= Stack.new(name)
+      print_ok "Planning: #{@stack.name}"
+      case @stack.plan
       when 0
-        print_ok "No changes: #{stack.name}"
+        print_ok "No changes: #{@stack.name}"
       when 1
-        Stacks.error!(stack)
-        print_crit "Plan failed: #{stack.name}"
-        stack.print_plan
+        Stacks.error!(@stack)
+        print_crit "Plan failed: #{@stack.name}"
+        @stack.print_plan
         throw :error
       when 2
-        Stacks.dirty!(stack)
-        print_warning "Changes detected: #{stack.name}"
-        stack.print_plan
+        Stacks.dirty!(@stack)
+        print_warning "Changes detected: #{@stack.name}"
+        @stack.print_plan
       else
-        fail
+        raise
       end
     end
+    # rubocop:enable Metrics/AbcSize
 
     desc 'audit NAME', 'Audit an individual stack, by name'
     def audit(name)
       plan(name)
-      if (stack = Stacks.dirty?(name))
-        Stacks.error!(stack)
-        print_crit "Dirty stack: #{stack.name}"
+      if (@stack = Stacks.dirty?(name))
+        Stacks.error!(@stack)
+        print_crit "Dirty stack: #{@stack.name}"
       end
     end
 
     desc 'validate NAME', 'Validate an individual stack, by name'
     def validate(name)
-      stack = Stack.new(name)
-      print_ok "Validating: #{stack.name}"
-      if stack.validate.zero?
-        print_ok "Validated: #{stack.name}"
+      @stack ||= Stack.new(name)
+      print_ok "Validating: #{@stack.name}"
+      if @stack.validate.zero?
+        print_ok "Validated: #{@stack.name}"
       else
-        Stacks.error!(stack)
-        print_crit "Validation failed: #{stack.name}"
+        Stacks.error!(@stack)
+        print_crit "Validation failed: #{@stack.name}"
         throw :error
       end
     end
 
     desc 'clean NAME', 'Clean an individual stack, by name'
     def clean(name)
-      stack = Stack.new(name)
-      print_warning "Cleaning: #{stack.name}"
-      stack.clean
-      print_ok "Cleaned: #{stack.name}"
+      @stack ||= Stack.new(name)
+      print_warning "Cleaning: #{@stack.name}"
+      @stack.clean
+      print_ok "Cleaned: #{@stack.name}"
     end
 
     #################################################################
@@ -273,38 +297,39 @@ module Terradactyl
 
     desc 'apply NAME', 'Apply an individual stack, by name', hide: true
     def apply(name)
-      stack = Stack.new(name)
-      print_warning "Applying: #{stack.name}"
-      if stack.apply.zero?
-        print_ok "Applied: #{stack.name}"
+      @stack ||= Stack.new(name)
+      print_warning "Applying: #{@stack.name}"
+      if @stack.apply.zero?
+        print_ok "Applied: #{@stack.name}"
       else
-        Stacks.error!(stack)
-        print_crit "Failed to apply changes: #{stack.name}"
+        Stacks.error!(@stack)
+        print_crit "Failed to apply changes: #{@stack.name}"
       end
     end
 
     desc 'refresh NAME', 'Refresh state on an individual stack, by name', hide: true
     def refresh(name)
-      stack = Stack.new(name)
-      print_crit "Refreshing: #{stack.name}"
-      if stack.refresh.zero?
-        print_warning "Refreshed: #{stack.name}"
+      @stack ||= Stack.new(name)
+      print_crit "Refreshing: #{@stack.name}"
+      if @stack.refresh.zero?
+        print_warning "Refreshed: #{@stack.name}"
       else
-        Stacks.error!(stack)
-        print_crit "Failed to refresh stack: #{stack.name}"
+        Stacks.error!(@stack)
+        print_crit "Failed to refresh stack: #{@stack.name}"
       end
     end
 
     desc 'destroy NAME', 'Destroy an individual stack, by name', hide: true
     def destroy(name)
-      stack = Stack.new(name)
-      print_crit "Destroying: #{stack.name}"
-      if stack.destroy.zero?
-        print_warning "Destroyed: #{stack.name}"
+      @stack ||= Stack.new(name)
+      print_crit "Destroying: #{@stack.name}"
+      if @stack.destroy.zero?
+        print_warning "Destroyed: #{@stack.name}"
       else
-        Stacks.error!(stack)
-        print_crit "Failed to apply changes: #{stack.name}"
+        Stacks.error!(@stack)
+        print_crit "Failed to apply changes: #{@stack.name}"
       end
     end
   end
+  # rubocop:enable Metrics/ClassLength
 end

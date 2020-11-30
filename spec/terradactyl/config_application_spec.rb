@@ -2,6 +2,16 @@ require 'spec_helper'
 
 RSpec.describe Terradactyl::ConfigApplication do
   let(:config_file) { 'terradactyl.yaml' }
+  let(:tmpdir) { Dir.mktmpdir('rspec_terradactyl') }
+
+  before(:each) do
+    cp_fixtures(tmpdir)
+    Dir.chdir(tmpdir)
+  end
+
+  after(:each) do
+    Dir.chdir(original_work_dir)
+  end
 
   context 'initialization' do
     context 'when config file is supplied' do
@@ -60,7 +70,7 @@ RSpec.describe Terradactyl::ConfigApplication do
         expect(instance.terraform).to be_a(OpenStruct)
         expect(instance.terraform.binary).to be_nil
         expect(instance.terraform.version).to be_nil
-        expect(instance.terraform.autoinstall).to be_nil
+        expect(instance.terraform.autoinstall).to be_truthy
         expect(instance.terraform.install_dir).to be_nil
       end
 

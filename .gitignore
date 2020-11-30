@@ -11,3 +11,8 @@ vendor
 
 # rspec failure tracking
 .rspec_status
+
+# terraform/terradactyl specific
+.terraform
+*.tfstate*
+*.audit.json

@@ -3,6 +3,7 @@
 module Terradactyl
   class Stacks
     class << self
+      # rubocop:disable Style/ClassVars
       @@dirty = []
       @@error = []
 
@@ -33,6 +34,7 @@ module Terradactyl
 
         @@dirty.any?
       end
+      # rubocop:enable Style/ClassVars
     end
 
     include Enumerable

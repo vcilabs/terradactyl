@@ -5,11 +5,11 @@ module Terradactyl
     CONFIG_DEFAULTS = <<~CONFIG_DEFAULTS
       ---
       terradactyl:
-        base_folder: default
+        base_folder: stacks
         terraform:
           binary:
           version:
-          autoinstall:
+          autoinstall: true
           install_dir:
           echo: false
           quiet: true
@@ -28,7 +28,6 @@ module Terradactyl
             parallelism: 5
             force: true
         environment:
-          AWS_REGION: us-west-2
           TF_PLUGIN_CACHE_DIR: ~/.terraform.d/plugins
         misc:
           utf8: true
@@ -36,7 +35,6 @@ module Terradactyl
         cleanup:
           empty: true
           match:
-            - "*.tfstate*"
             - "*.tfout"
             - "*.tflock"
             - "*.zip"
@@ -59,7 +57,7 @@ module Terradactyl
     def to_h
       @config
     end
-    alias_method :to_hash, :to_h
+    alias to_hash to_h
 
     private
 
@@ -147,8 +145,8 @@ module Terradactyl
       load_config
     end
 
-    alias_method :name, :stack_name
-    alias_method :path, :stack_path
+    alias name stack_name
+    alias path stack_path
 
     def state_file
       'terraform.tfstate'

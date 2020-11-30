@@ -106,6 +106,7 @@ module Terradactyl
       Validate.execute(dir_or_plan: nil, options: command_options)
     end
 
+    # rubocop:disable Metrics/AbcSize
     def clean
       removals = config.cleanup.match.map { |p| Dir.glob("**/#{p}") }
       removals << `find . -type d -empty`.split if config.cleanup.empty
@@ -115,6 +116,7 @@ module Terradactyl
       end
       puts unless removals.empty?
     end
+    # rubocop:enable Metrics/AbcSize
 
     private
 
@@ -137,6 +139,16 @@ module Terradactyl
     end
 
     module Rev012
+      include Terraform::Commands
+
+      private
+
+      def parser
+        Terraform::Rev012::PlanFileParser
+      end
+    end
+
+    module Rev013
       include Terraform::Commands
 
       private

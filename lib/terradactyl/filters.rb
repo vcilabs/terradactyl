@@ -61,7 +61,7 @@ module Terradactyl
 
     def git_cmd
       `git --no-pager diff --name-only FETCH_HEAD ORIG_HEAD .`
-    rescue
+    rescue StandardError
       String.new
     end
   end
@@ -81,7 +81,7 @@ module Terradactyl
 
     def git_cmd
       `git --no-pager diff --name-only origin/#{current_branch} .`
-    rescue
+    rescue StandardError
       String.new
     end
   end

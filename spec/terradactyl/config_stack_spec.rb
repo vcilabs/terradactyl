@@ -1,11 +1,18 @@
 require 'spec_helper'
 
 RSpec.describe Terradactyl::ConfigStack do
+  let(:stack_name) { 'stack_a' }
+  let(:tmpdir) { Dir.mktmpdir('rspec_terradactyl') }
+
   before(:each) do
+    cp_fixtures(tmpdir)
+    Dir.chdir(tmpdir)
     Terradactyl::ConfigProject.instance.reload
   end
 
-  let(:stack_name) { 'stack_a' }
+  after(:each) do
+    Dir.chdir(original_work_dir)
+  end
 
   subject { described_class.new(stack_name) }
 
