@@ -309,7 +309,7 @@ terradactyl:
 
 That way, when the next Terraform `0.13` is released, you can begin using it immediately, but you will never have to worry about upgrading to `0.14` unsuspectingly.
 
-In fact, there are a number of ways to express implict versions ...
+In fact, there are a number of ways to express implicit versions ...
 
     ~> 0.11.14
     ~> 0.11
