@@ -1,5 +1,11 @@
 # CHANGELOG
 
+## 0.13.1 (2020-12-09)
+
+BUG FIXES:
+
+* update README to include missing acknowledgments
+
 ## 0.13.0 (2020-11-26)
 
 NEW FEATURES:
