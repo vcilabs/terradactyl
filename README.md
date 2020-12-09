@@ -323,3 +323,7 @@ Bug reports and pull requests are welcome on GitHub at https://github.com/vcilab
 ## License
 
 This code is released under the MIT License. See [LICENSE.txt](LICENSE.txt).
+
+## Acknowledgments
+
+Special thanks to [Riley Shott](https://github.com/Ginja) upon whose original design and work I based this Gem.
