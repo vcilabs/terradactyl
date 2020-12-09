@@ -1,5 +1,12 @@
 # CHANGELOG
 
+## 0.13.2 (2020-12-09)
+
+BUG FIXES:
+
+* replace symlink to executable with identical copy
+  - `gem build` produces broken symlinks; unsupported
+
 ## 0.13.1 (2020-12-09)
 
 BUG FIXES:
