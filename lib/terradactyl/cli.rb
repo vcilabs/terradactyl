@@ -247,7 +247,7 @@ module Terradactyl
       when 1
         Stacks.error!(@stack)
         print_crit "Plan failed: #{@stack.name}"
-        @stack.print_plan
+        @stack.print_error
         throw :error
       when 2
         Stacks.dirty!(@stack)

@@ -63,18 +63,17 @@ module Terradactyl
                               options: options,
                               capture: true)
 
-      output = case captured.exitstatus
-               when 0
-                 'No changes. Infrastructure is up-to-date.'
-               when 1
-                 captured.stderr
-               when 2
-                 captured.stdout
-               end
+      @plan_file_obj = load_plan_file
 
-      @plan_file_obj             = load_plan_file
-      @plan_file_obj.plan_output = output
-      @plan_file_obj.save
+      case captured.exitstatus
+      when 0
+        'No changes. Infrastructure is up-to-date.'
+      when 1
+        @plan_file_obj.error_output = captured.stderr
+      when 2
+        @plan_file_obj.plan_output = captured.stdout
+        @plan_file_obj.save
+      end
 
       captured.exitstatus
     end
@@ -154,7 +153,27 @@ module Terradactyl
       private
 
       def parser
-        Terraform::Rev012::PlanFileParser
+        Terraform::Rev013::PlanFileParser
+      end
+    end
+
+    module Rev014
+      include Terraform::Commands
+
+      private
+
+      def parser
+        Terraform::Rev014::PlanFileParser
+      end
+    end
+
+    module Rev015
+      include Terraform::Commands
+
+      private
+
+      def parser
+        Terraform::Rev015::PlanFileParser
       end
     end
   end

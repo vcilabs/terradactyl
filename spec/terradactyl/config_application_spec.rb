@@ -16,7 +16,7 @@ RSpec.describe Terradactyl::ConfigApplication do
   context 'initialization' do
     context 'when config file is supplied' do
       describe 'defaults are merged' do
-        let(:instance)    { described_class.new(config_file) }
+        let(:instance) { described_class.new(config_file) }
         it 'loads the config' do
           expect(instance.terraform.version).to eq(terraform_minimum)
         end

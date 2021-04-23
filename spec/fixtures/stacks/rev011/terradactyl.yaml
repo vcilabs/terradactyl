@@ -1,0 +1,4 @@
+---
+terradactyl:
+  terraform:
+    version: 0.11.14

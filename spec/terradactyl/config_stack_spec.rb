@@ -1,7 +1,7 @@
 require 'spec_helper'
 
 RSpec.describe Terradactyl::ConfigStack do
-  let(:stack_name) { 'stack_a' }
+  let(:stack_name) { 'rev011' }
   let(:tmpdir) { Dir.mktmpdir('rspec_terradactyl') }
 
   before(:each) do
@@ -29,9 +29,7 @@ RSpec.describe Terradactyl::ConfigStack do
   end
 
   context 'when stack-level config file is NOT present' do
-    let(:stack_name) { 'stack_c' }
-
-    subject { described_class.new(stack_name) }
+    subject { described_class.new('non_existent_stack') }
 
     describe '#terradactyl' do
       it 'returns Terradactyl config data' do
@@ -48,8 +46,6 @@ RSpec.describe Terradactyl::ConfigStack do
   end
 
   context 'when stack-level config file _is_ present' do
-    let(:stack_name) { 'stack_a' }
-
     subject { described_class.new(stack_name) }
 
     describe '#terradactyl' do
