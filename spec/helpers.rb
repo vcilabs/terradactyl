@@ -139,23 +139,6 @@ module Helpers
   end
 
   def terraform_latest
-    calculate_latest
-  end
-
-  def calculate_latest
-    fh = Downloader.fetch(downloads_url)
-    re = %r{#{releases_url}\/(?<version>\d+\.\d+\.\d+)}
-    fh.read.match(re)['version']
-  ensure
-    fh.close
-    fh.unlink
-  end
-
-  def downloads_url
-    'https://www.terraform.io/downloads.html'
-  end
-
-  def releases_url
-    'https://releases.hashicorp.com/terraform'
+    Terradactyl::Terraform::VersionManager.latest
   end
 end

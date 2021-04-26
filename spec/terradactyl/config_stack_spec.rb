@@ -29,7 +29,8 @@ RSpec.describe Terradactyl::ConfigStack do
   end
 
   context 'when stack-level config file is NOT present' do
-    subject { described_class.new('non_existent_stack') }
+    let(:stack_name) { 'configless' }
+    subject { described_class.new(stack_name) }
 
     describe '#terradactyl' do
       it 'returns Terradactyl config data' do
@@ -41,6 +42,43 @@ RSpec.describe Terradactyl::ConfigStack do
       it 'returns Terraform config data' do
         expect(subject.terraform).to be_a(OpenStruct)
         expect(subject.terraform.version).to eq(terraform_minimum)
+      end
+    end
+
+    context 'when a Terraform version is expressed in .tf' do
+      describe '#terraform.version' do
+        let(:terraform_settings) do
+          <<~LINT_ME
+
+            terraform {
+
+              required_providers {
+                archive = {
+                  source = "hashicorp/archive"
+                }
+                aws = {
+                  source = "hashicorp/aws"
+                }
+              }
+
+              required_version = ">= 0.13"
+            }
+
+          LINT_ME
+        end
+
+        before do
+          FileUtils.mkdir_p("stacks/#{stack_name}")
+          File.write("stacks/#{stack_name}/settings.tf", terraform_settings)
+        end
+
+        after do
+          FileUtils.rm_rf("stacks/#{stack_name}")
+        end
+
+        it 'returns the version specified by Terraform settings' do
+          expect(subject.terraform.version).to eq(">= 0.13")
+        end
       end
     end
   end
@@ -69,6 +107,43 @@ RSpec.describe Terradactyl::ConfigStack do
     describe '#base_folder' do
       it 'ignores the stack-level config' do
         expect(subject.base_folder).to eq('stacks')
+      end
+    end
+
+    context 'when a Terraform version is expressed in .tf' do
+      describe '#terraform.version' do
+        let(:terraform_settings) do
+          <<~LINT_ME
+
+            terraform {
+
+              required_providers {
+                archive = {
+                  source = "hashicorp/archive"
+                }
+                aws = {
+                  source = "hashicorp/aws"
+                }
+              }
+
+              required_version = ">= 0.13"
+            }
+
+          LINT_ME
+        end
+
+        before do
+          FileUtils.mkdir_p("stacks/#{stack_name}")
+          File.write("stacks/#{stack_name}/settings.tf", terraform_settings)
+        end
+
+        after do
+          FileUtils.rm_rf("stacks/#{stack_name}")
+        end
+
+        it 'returns the version specified by Terradactyl' do
+          expect(subject.terraform.version).to eq(terraform_legacy)
+        end
       end
     end
   end
