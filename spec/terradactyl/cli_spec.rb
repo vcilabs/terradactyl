@@ -247,4 +247,52 @@ RSpec.describe Terradactyl::CLI do
       expect(command.exitstatus).to eq(0)
     end
   end
+
+  describe 'install' do
+    describe 'terraform' do
+      after(:all) do
+        Terradactyl::Terraform::VersionManager.binaries.each do |file|
+          FileUtils.rm_rf file
+        end
+        Terradactyl::Terraform::VersionManager.reset!
+      end
+
+      let(:valid_expressions) {
+        {
+          ''                                   => /terraform-#{terraform_latest}/,
+          %q{--version="~> 0.14.0"}            => /terraform-0\.14\.\d+/,
+          %q{--version=">= 0.13.0, <= 0.14.0"} => /terraform-0\.14\.\d+/,
+          %q{--version="= 0.11.14"}            => /terraform-0\.11\.14/,
+        }
+      }
+
+      let(:invalid_expressions) {
+        {
+          %q{--version="~>"}                  => 'Invalid version string',
+          %q{--version=">= 0.13.0, <=0.14.0"} => 'Unparsable version string',
+          %q{--version="0"}                   => 'Invalid version string',
+        }
+      }
+
+      context 'when passed a bad version expression' do
+        it 'raises an exception' do
+          invalid_expressions.each do |exp, re|
+            cmd = exe("terradactyl install terraform #{exp}", tmpdir)
+            expect(cmd.stderr).to match(re)
+            expect(cmd.exitstatus).not_to eq(0)
+          end
+        end
+      end
+
+      context 'when passed a valid version expression' do
+        it 'installs the expected version' do
+          valid_expressions.each do |exp, re|
+            cmd = exe("terradactyl install terraform #{exp}", tmpdir)
+            expect(cmd.stdout).to match(re)
+            expect(cmd.exitstatus).to eq(0)
+          end
+        end
+      end
+    end
+  end
 end
