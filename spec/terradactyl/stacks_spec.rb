@@ -1,12 +1,13 @@
 require 'spec_helper'
 
 RSpec.describe Terradactyl::Stacks do
-  let(:stack_name)    { 'stack_a' }
+  let(:tmpdir)        { Dir.mktmpdir('rspec_terradactyl') }
+  let(:known_stacks)  { Dir["#{tmpdir}/stacks/*"] }
+  let(:num_of_stacks) { known_stacks.size }
+  let(:target_stack)  { known_stacks.shuffle.first }
+  let(:stack_name)    { File.basename(target_stack) }
   let(:stack)         { silence { Terradactyl::Stack.new(stack_name) } }
   let(:config)        { stack.config }
-  let(:artifacts)     { terraform_build_artifacts(stack) }
-  let(:tmpdir)        { Dir.mktmpdir('rspec_terradactyl') }
-  let(:num_of_stacks) { Dir["#{tmpdir}/stacks/*"].size }
 
   before(:each) do
     Terradactyl::Terraform::VersionManager.binaries.each do |path|
@@ -27,10 +28,6 @@ RSpec.describe Terradactyl::Stacks do
   end
 
   context 'instance methods' do
-    after(:each) do
-      artifacts.each_pair { |_k,v| FileUtils.rm_rf(v) if File.exist?(v) }
-    end
-
     describe '#list' do
       it 'displays a list of Terraform stacks' do
         expect(subject.list).to be_a(Array)
@@ -39,9 +36,9 @@ RSpec.describe Terradactyl::Stacks do
     end
 
     describe '#validate' do
-      context 'when the specifed stack exists' do
+      context 'when the specified stack exists' do
         it 'returns true' do
-          expect(subject.validate('stack_a')).to be_truthy
+          expect(subject.validate(stack_name)).to be_truthy
         end
       end
       context 'when the specified stack does NOT exist' do
@@ -67,10 +64,6 @@ RSpec.describe Terradactyl::Stacks do
   context 'class methods' do
     before(:each) do
       described_class.dirty!(stack)
-    end
-
-    after(:each) do
-      artifacts.each_pair { |_k,v| FileUtils.rm_rf(v) if File.exist?(v) }
     end
 
     describe '#dirty?' do
