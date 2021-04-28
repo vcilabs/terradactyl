@@ -33,11 +33,10 @@ Gem::Specification.new do |spec|
   spec.add_dependency 'deep_merge', '~> 1.2'
   spec.add_dependency 'bundler', '>= 1.16'
   spec.add_dependency 'rake', '>= 10.0'
-  spec.add_dependency 'terradactyl-terraform', '>= 0.3.1'
+  spec.add_dependency 'terradactyl-terraform', '>= 0.15.0'
 
   spec.add_development_dependency 'rspec', '~> 3.0'
   spec.add_development_dependency 'pry', '~> 0.12'
   spec.add_development_dependency 'pry-remote', '~> 0.1.8'
   spec.add_development_dependency 'rubocop', '~> 0.71.0'
 end
-

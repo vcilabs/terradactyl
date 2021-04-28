@@ -19,7 +19,7 @@ Terradactyl simplifies managing large heterogeneous Terraform monorepos by intro
 
 Requires Ruby 2.5 or greater.
 
-NOTE: Terraform sub-command operations are only supported between stable versions `~> 0.11.x` and `~> 0.13.x`.
+NOTE: Terraform sub-command operations are only supported between stable versions `>= 0.11.x` to `~> 0.15.x`.
 
 ## Installation
 
@@ -83,6 +83,14 @@ The Terradactyl CLI is installed with a symlink so it may be called by its full 
     $ terradactyl help
     $ td help
 
+#### install terraform
+
+##### NOTE: You do not need to explicitly install Terraform, it will be downloaded and installed automatically, if your stack is configured to do so -- this is just to demonstrate on-demand installs ...
+
+This is optional!
+
+    $ terradactyl install terraform --version=0.15.1
+
 #### quickplan a single stack
 
 You can specify the relative path to the stack OR the just the stack name. These two commands are equivalent:
@@ -110,6 +118,18 @@ When complete, you should have a JSON report that you can pass to other processe
 
     $ terradactyl smartapply
 
+#### upgrade a legacy stack
+
+Running this one time will upgrade it to next minor revision of Terraform ...
+
+    # Take me to Terraform v12
+    $ terradactyl upgrade stacks/tfv11
+
+Running it again will bump it again!
+
+    # Take me to Terraform v13
+    $ terradactyl upgrade stacks/tfv11
+
 #### clean all the stacks
 
     $ terradactyl clean-all
@@ -122,7 +142,7 @@ See the [Configuration](#configuration) section for more info on how to control 
 
 ## Operation
 
-NOTE: `terradactyl` (symlinked as `td`) ONLY operates in the root of your monorepo. In order to execute any sub-commands, your working directory must contain your project-level configuration file, otherwise you will receive this:
+NOTE: `terradactyl` (symlinked as `td`) ONLY operates in the root of your monorepo. In order to execute any subcommands, your working directory must contain your project-level configuration file, otherwise you will receive this:
 
     FATAL: Could not load project file: `terradactyl.yaml`, No such file or directory @ rb_sysopen - terradactyl.yaml
 
@@ -135,9 +155,9 @@ Generally speaking, Terradactyl operates on the principle of **plan file** (`*.t
 
 In some cases, this might seem onerous, but it pays dividends in team workflow and CI/CD contexts.
 
-### Supported sub-commands
+### Supported subcommands
 
-Terradactyl was created to facilitate the using Terraform in a CI environment. As such, some of the more exotic ad hoc user-focused sub-commands have not received any effort in integration. The following is a list of the supported Terraform sub-commands:
+Terradactyl was created to facilitate the using Terraform in a CI environment. As such, some of the more exotic ad hoc user-focused subcommands have not received any effort in integration. The following is a list of the supported Terraform subcommands:
 
 * apply
 * destroy
@@ -146,6 +166,32 @@ Terradactyl was created to facilitate the using Terraform in a CI environment. A
 * plan
 * refresh
 * validate
+
+### Special utility subcommands
+
+Terradactyl add some unique utility commands that permit you to more readily manage your Terraform stacks.
+
+#### install
+
+Installs supporting components, namely Terraform itself...
+
+    # Install the latest terraform binary
+    terradactly install terraform
+
+    # Install pessimistic version
+    terradactyl install terraform --version="~> 0.13.0"
+
+    # Install ranged version
+    terradactyl install terraform --version=">= 0.14.5, <= 0.14.7"
+
+    # Install explicit version
+    terradactyl install terraform --version=0.15.0-beta2
+
+#### upgrade
+
+Upgrade abstracts the various Terraform subcommands related to upgrading individual stacks (`0.12upgrade` and `0.13upgrade`).
+
+    terradactyl upgrade <stack>
 
 ### Meta-commands
 
@@ -166,7 +212,7 @@ Apply or Refresh _ANY_ stack containing a plan file.
 
 ### Getting Help
 
-For a list of available sub-commands do:
+For a list of available subcommands do:
 
     $ terradactyl help
 
@@ -195,7 +241,7 @@ You can dump the compiled configuration for your project using the `defaults` su
 ```yaml
 terradactyl:              <Object, Terradactyl config>
   base_folder:            <String, the sub-directory for all your Terraform stacks, default=stacks>
-  terraform:              <Object, configuration to Terraform sub-commands and binaries>
+  terraform:              <Object, configuration to Terraform subcommands and binaries>
     binary:               <String, path to the Terraform binary you wish to use, default=nil>
     version:              <String, explicit or implict Terraform version, default=nil>
     autoinstall:          <Bool, perform automatic Terraform installations, default=true>
@@ -228,7 +274,7 @@ terradactyl:              <Object, Terradactyl config>
 
 ### Terraform sub-command arguments
 
-Note that the config above contains config for Terraform sub-commands. for example:
+Note that the config above contains config for Terraform subcommands. for example:
 
 ```yaml
 terradactyl:
@@ -243,12 +289,12 @@ Each of the keys in the `plan` object correspond to an argument passed to the `t
 
     terraform -lock=false -parallelism=5 -detailed-exitcode
 
-There are two conventions to keep in mind when configuring sub-commands:
+There are two conventions to keep in mind when configuring subcommands:
 
 1. any sub-command option which toggles behaviour (i.e. `-detailed-exitcode`) requires a specific Boolean value of `true` OR `false`
 2. any sub-command option that is hyphenated (i.e. `-detailed-exitcode`) is set in the config using an **underscore** (i.e `detailed_exitcode`)
 
-If you need to tweak or augment any of the default arguments passed to any of the supported Terraform sub-commands, you can do so by adding them to the config.
+If you need to tweak or augment any of the default arguments passed to any of the supported Terraform subcommands, you can do so by adding them to the config.
 
 Example:
 
@@ -260,7 +306,7 @@ terradactyl:
       backup: /tmp/tfbackup
 ```
 
-In addition, you can override the `echo` and `quiet` settings for any of the Terraform sub-commands:
+In addition, you can override the `echo` and `quiet` settings for any of the Terraform subcommands:
 
 ```yaml
 terradactyl:
@@ -279,9 +325,29 @@ This can assist in debugging.
 
 ### Terraform version management
 
+Terradactyl gives you some powerful ways to manage which versions of Terraform you support and where.
+
+You may set **project-wide** OR **stack-explicit** versions, by using a config file (`terradactyl.yaml`, see [Configuration](#configuration)).
+
+In addition, Terradactyl will also, search for a stack's desired Terraform version from one of **your HCL files**.
+
+    terraform {
+      required_version = "~> 0.13.0"
+    }
+
+If a configuration like the one above is discovered in your stack's ...
+
+  * `settings.tf`
+  * `versions.tf`
+  * `backend.tf`
+
+... file, Terradactyl will download and use that version as required.
+
+NOTE: These files are searched in the order you see above. If you specify `required_version` multiple times, the last one discovered is used.
+
 #### Explicit versions
 
-By default, Terradactyl will always use the **latest** stable version of Terraform. If you do not specify a version, you will always get the latest stable version of Terraform available.
+By default, Terradactyl will always use the **latest** stable version of Terraform. So, if you don't specify a version, you will always get the latest stable version of Terraform available.
 
 But, as part of Terradactyl's configuration, you can specify a **project** Terraform version, making it the default for _your_ monorepo:
 
@@ -291,7 +357,9 @@ terradactyl:
     version: 0.12.29
 ```
 
-Still, because Terradactyl's configuration is hierarchic, in addition the default version you specify at the project level, **each stack** may also specify a different version of Terraform.
+Still, because Terradactyl's configuration is hierarchic, you can also specify a version at the project level ...
+
+Yes! **Each stack may use a different version of Terradactyl independent of any other.**
 
 See [examples/multi-tf-version](examples/multi-tf-version) for this setup.
 

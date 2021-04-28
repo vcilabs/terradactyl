@@ -1,1 +1,3 @@
-resource "null_resource" "bar" {}
+resource "null_resource" "bar" {
+}
+
