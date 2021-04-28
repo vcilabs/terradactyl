@@ -67,6 +67,20 @@ module Terradactyl
       def terraform_latest
         Terradactyl::Terraform::VersionManager.latest
       end
+
+      def upgrade_stack(name)
+        @stack ||= Stack.new(name)
+        print_warning "Upgrading: #{@stack.name}"
+        if @stack.upgrade.zero?
+          print_ok "Upgraded: #{@stack.name}"
+        else
+          Stacks.error!(@stack)
+          print_crit "Failed to upgrade: #{@stack.name}"
+        end
+      rescue Terradactyl::Terraform::Commands::UnsupportedCommandError => e
+        print_crit "Error: #{e.message}"
+        exit 1
+      end
     end
     # rubocop:enable Metrics/BlockLength
 
@@ -152,6 +166,14 @@ module Terradactyl
     # * These tasks are used regularly against groups of stacks, but
     # the `quickplan` task is an exception to this rule.
     #################################################################
+
+    desc 'upgrade NAME', 'Cleans, inits, upgrades and formats an individual stack, by name'
+    def upgrade(name)
+      clean(name)
+      init(name)
+      upgrade_stack(name)
+      fmt(name)
+    end
 
     desc 'quickplan NAME', 'Clean, init and plan a stack, by name'
     def quickplan(name)
@@ -358,16 +380,21 @@ module Terradactyl
 
     desc 'install COMPONENT', 'Installs specified component'
     long_desc <<~LONGDESC
-       The `terradactyl install COMPONENT` subcommand perfoms installations of
+      The `terradactyl install COMPONENT` subcommand perfoms installations of
       prerequisties. At present, only Terraform binaries are supported.
-       Here are a few examples:
-       # Install latest
+
+      Here are a few examples:
+
+      # Install latest
       `terradactyl install terraform`
-       # Install pessimistic version
+
+      # Install pessimistic version
       `terradactyl install terraform --version="~> 0.13.0"`
-       # Install ranged version
+
+      # Install ranged version
       `terradactyl install terraform --version=">= 0.14.5, <= 0.14.7"`
-       # Install explicit version
+
+      # Install explicit version
       `terradactyl install terraform --version=0.15.0-beta2`
 
     LONGDESC
@@ -391,21 +418,6 @@ module Terradactyl
       end
     end
     # rubocop:enable Metrics/AbcSize
-
-    desc 'upgrade NAME', 'Upgrade an individual stack, by name'
-    def upgrade(name)
-      @stack ||= Stack.new(name)
-      print_warning "Upgrading: #{@stack.name}"
-      if @stack.upgrade.zero?
-        print_ok "Upgraded: #{@stack.name}"
-      else
-        Stacks.error!(@stack)
-        print_crit "Failed to upgrade: #{@stack.name}"
-      end
-    rescue Terradactyl::Terraform::Commands::UnsupportedCommandError => e
-      print_crit "Error: #{e.message}"
-      exit 1
-    end
   end
   # rubocop:enable Metrics/ClassLength
 end
