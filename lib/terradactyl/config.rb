@@ -132,11 +132,11 @@ module Terradactyl
   end
 
   class ConfigStack < ConfigApplication
-    TERRAFORM_SETTINGS_FILES = %w{
+    TERRAFORM_SETTINGS_FILES = %w[
       settings.tf
       versions.tf
       backend.tf
-    }
+    ].freeze
 
     attr_reader :stack_name, :stack_path, :base_folder
 

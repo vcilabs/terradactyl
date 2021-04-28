@@ -33,6 +33,7 @@ module Terradactyl
       super
     end
 
+    # rubocop:disable Metrics/BlockLength
     no_commands do
       # Monkey-patch Thor internal method to break out of nested calls
       def invoke_command(command, *args)
@@ -67,6 +68,7 @@ module Terradactyl
         Terradactyl::Terraform::VersionManager.latest
       end
     end
+    # rubocop:enable Metrics/BlockLength
 
     #################################################################
     # GENERIC TASKS
@@ -356,26 +358,21 @@ module Terradactyl
 
     desc 'install COMPONENT', 'Installs specified component'
     long_desc <<~LONGDESC
-
-    The `terradactyl install COMPONENT` subcommand perfoms installations of
-    prerequisties. At present, only Terraform binaries are supported.
-
-    Here are a few examples:
-
-    # Install latest
-    `terradactyl install terraform`
-
-    # Install pessimistic version
-    `terradactyl install terraform --version="~> 0.13.0"`
-
-    # Install ranged version
-    `terradactyl install terraform --version=">= 0.14.5, <= 0.14.7"`
-
-    # Install explicit version
-    `terradactyl install terraform --version=0.15.0-beta2`
+       The `terradactyl install COMPONENT` subcommand perfoms installations of
+      prerequisties. At present, only Terraform binaries are supported.
+       Here are a few examples:
+       # Install latest
+      `terradactyl install terraform`
+       # Install pessimistic version
+      `terradactyl install terraform --version="~> 0.13.0"`
+       # Install ranged version
+      `terradactyl install terraform --version=">= 0.14.5, <= 0.14.7"`
+       # Install explicit version
+      `terradactyl install terraform --version=0.15.0-beta2`
 
     LONGDESC
     option :version, type: :string, default: 'latest'
+    # rubocop:disable Metrics/AbcSize
     def install(component)
       case component.to_sym
       when :terraform
@@ -393,6 +390,7 @@ module Terradactyl
         exit 1
       end
     end
+    # rubocop:enable Metrics/AbcSize
 
     desc 'upgrade NAME', 'Upgrade an individual stack, by name'
     def upgrade(name)

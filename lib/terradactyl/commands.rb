@@ -6,7 +6,7 @@ module Terradactyl
       module Upgrade
         def defaults
           {
-            'yes' => false,
+            'yes' => false
           }
         end
 
@@ -18,6 +18,7 @@ module Terradactyl
       end
     end
 
+    # rubocop:disable Metrics/ModuleLength
     module Commands
       class UnsupportedCommandError < RuntimeError
         def initialize(msg)
@@ -47,7 +48,7 @@ module Terradactyl
         private
 
         def calculate_upgrade(current_version)
-          maj, min, rev = current_version.split('.')
+          maj, min, _rev = current_version.split('.')
           min = min.to_i < 13 ? (min.to_i + 1) : min
           resolution = VersionManager.resolve("~> #{maj}.#{min}.0")
           VersionManager.version = resolution
@@ -62,6 +63,7 @@ module Terradactyl
         end
       end
     end
+    # rubocop:enable Metrics/ModuleLength
   end
 
   module Commands
@@ -194,7 +196,7 @@ module Terradactyl
 
       if result.zero?
         settings = File.read('versions.tf').lstrip
-        settings.sub!(req_ver, %{#{$1}"~> #{upgrade.version}"})
+        settings.sub!(req_ver, %(#{Regexp.last_match(1)}"~> #{upgrade.version}"))
 
         if File.write('versions.tf', settings)
           FileUtils.rm_rf('terradactyl.yaml') if File.exist?('terradactyl.yaml')
