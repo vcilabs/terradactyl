@@ -1,5 +1,15 @@
 # CHANGELOG
 
+## 0.15.1 (2021-04-28)
+
+BUG FIXES:
+
+* repair broken `upgrade` subcommand
+  * fix malformed HCL substitution
+  * fix regex match order of operations bug
+  * make the feature more robust
+  * add better feedback
+
 ## 0.15.0 (2021-04-27)
 
 NEW FEATURES:
