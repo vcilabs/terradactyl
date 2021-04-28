@@ -2,8 +2,8 @@ require 'spec_helper'
 
 RSpec.describe Terradactyl::Stack do
   Helpers.terraform_test_matrix.each_pair do |rev, info|
-    context "when Terraform version is #{info[:version]}" do
-      let(:stack_name) { info[:stack_name] }
+    context "when Terraform version is #{rev}" do
+      let(:stack_name) { rev.to_s }
       let(:stack)      { silence { Terradactyl::Stack.new(stack_name) } }
       let(:stack_path) { stack.path }
       let(:config)     { stack.config }
@@ -12,6 +12,10 @@ RSpec.describe Terradactyl::Stack do
           resource "null_resource" "unlinted"{}
         LINT_ME
       end
+
+      let(:tf_version) { stack.terraform.version }
+
+      let(:tf_binary) { Terradactyl::Terraform::VersionManager.binary }
 
       let(:invalid) do
         <<~INVALID
@@ -108,13 +112,6 @@ RSpec.describe Terradactyl::Stack do
           end
 
           context 'with autoinstall' do
-            let(:tf_version) { info[:version] }
-
-            let(:tf_binary) do
-              resolved = Terradactyl::Terraform::VersionManager.resolve(tf_version)
-              "#{stack.config.terraform.install_dir}/terraform-#{resolved}"
-            end
-
             it 'executes sucessfully' do
               stack.config.terraform.autoinstall = true
               expect(stack.init).to be_zero

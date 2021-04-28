@@ -9,7 +9,7 @@ RSpec.describe Terradactyl::CLI do
 
           let(:version) { info[:version] }
 
-          let(:stack_name) { rev }
+          let(:stack_name) { rev.to_s }
 
           let(:command) do
             exe("terradactyl upgrade #{stack_name}", tmpdir)

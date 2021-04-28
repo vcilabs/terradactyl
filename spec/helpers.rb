@@ -3,8 +3,7 @@ module Helpers
     def terraform_test_matrix
       {
         rev011: {
-          version: '0.11.14',
-          stack_name: 'rev011',
+          version: '~> 0.11.14',
           upgradeable: true,
           artifacts: {
             plan:          'rev011.tfout',
@@ -18,8 +17,7 @@ module Helpers
           }
         },
         rev012: {
-          version: '0.12.30',
-          stack_name: 'rev012',
+          version: '~> 0.12.30',
           upgradeable: true,
           artifacts: {
             plan:          'rev012.tfout',
@@ -33,8 +31,7 @@ module Helpers
           }
         },
         rev013: {
-          version: '0.13.6',
-          stack_name: 'rev013',
+          version: '~> 0.13.6',
           upgradeable: true,
           artifacts: {
             plan:          'rev013.tfout',
@@ -48,8 +45,7 @@ module Helpers
           }
         },
         rev014: {
-          version: '0.14.10',
-          stack_name: 'rev014',
+          version: '~> 0.14.10',
           upgradeable: false,
           artifacts: {
             plan:          'rev014.tfout',
@@ -63,8 +59,7 @@ module Helpers
           }
         },
         rev015: {
-          version: '0.15.0',
-          stack_name: 'rev015',
+          version: '~> 0.15.0',
           upgradeable: false,
           artifacts: {
             plan:          'rev015.tfout',
@@ -145,5 +140,9 @@ module Helpers
 
   def terraform_latest
     Terradactyl::Terraform::VersionManager.latest
+  end
+
+  def terraform_resolve(expression)
+    Terradactyl::Terraform::VersionManager.resolve(expression)
   end
 end
