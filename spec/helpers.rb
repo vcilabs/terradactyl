@@ -5,6 +5,7 @@ module Helpers
         rev011: {
           version: '0.11.14',
           stack_name: 'rev011',
+          upgradeable: true,
           artifacts: {
             plan:          'rev011.tfout',
             init:          '.terraform',
@@ -14,11 +15,13 @@ module Helpers
             destroy:       'terraform.tfstate.backup',
             lint:          'unlinted.tf',
             validate:      'invalid.tf',
+            upgrade:       'terradactyl.yaml',
           }
         },
         rev012: {
           version: '0.12.30',
           stack_name: 'rev012',
+          upgradeable: true,
           artifacts: {
             plan:          'rev012.tfout',
             init:          '.terraform',
@@ -28,11 +31,13 @@ module Helpers
             destroy:       'terraform.tfstate.backup',
             lint:          'unlinted.tf',
             validate:      'invalid.tf',
+            upgrade:       'terradactyl.yaml',
           }
         },
         rev013: {
           version: '0.13.6',
           stack_name: 'rev013',
+          upgradeable: true,
           artifacts: {
             plan:          'rev013.tfout',
             plan_file_obj: '.terraform/terradactyl.planfile.data',
@@ -42,11 +47,13 @@ module Helpers
             destroy:       'terraform.tfstate',
             lint:          'unlinted.tf',
             validate:      'invalid.tf',
+            upgrade:       'terradactyl.yaml',
           }
         },
         rev014: {
           version: '0.14.10',
           stack_name: 'rev014',
+          upgradeable: false,
           artifacts: {
             plan:          'rev014.tfout',
             plan_file_obj: '.terraform/terradactyl.planfile.data',
@@ -56,11 +63,13 @@ module Helpers
             destroy:       'terraform.tfstate',
             lint:          'unlinted.tf',
             validate:      'invalid.tf',
+            upgrade:       'terradactyl.yaml',
           }
         },
         rev015: {
           version: '0.15.0',
           stack_name: 'rev015',
+          upgradeable: false,
           artifacts: {
             plan:          'rev015.tfout',
             plan_file_obj: '.terraform/terradactyl.planfile.data',
@@ -70,6 +79,7 @@ module Helpers
             destroy:       'terraform.tfstate',
             lint:          'unlinted.tf',
             validate:      'invalid.tf',
+            upgrade:       'terradactyl.yaml',
           }
         },
       }

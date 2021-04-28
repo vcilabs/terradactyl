@@ -1,6 +1,69 @@
 # frozen_string_literal: true
 
 module Terradactyl
+  module Terraform
+    module Subcommands
+      module Upgrade
+        def defaults
+          {
+            'yes' => false,
+          }
+        end
+
+        def switches
+          %w[
+            yes
+          ]
+        end
+      end
+    end
+
+    module Commands
+      class UnsupportedCommandError < RuntimeError
+        def initialize(msg)
+          super(msg)
+        end
+      end
+
+      class Upgrade < Base
+        ERROR_UNSUPPORTED = <<~ERROR
+          subcommand `upgrade` is not supported on this stack!
+
+                This stack may already be upgraded. Check the stack's specified
+                Terraform version and consult its builtin help for further
+                details.
+        ERROR
+
+        class << self
+          def error_unsupported
+            raise UnsupportedCommandError, ERROR_UNSUPPORTED
+          end
+        end
+
+        def version
+          @version ||= calculate_upgrade(super)
+        end
+
+        private
+
+        def calculate_upgrade(current_version)
+          maj, min, rev = current_version.split('.')
+          min = min.to_i < 13 ? (min.to_i + 1) : min
+          resolution = VersionManager.resolve("~> #{maj}.#{min}.0")
+          VersionManager.version = resolution
+          VersionManager.install
+          VersionManager.version
+        end
+
+        def subcmd
+          pre = version.slice(/\d+\.\d+/)
+          sig = self.class.name.split('::').last.downcase
+          sig == 'base' ? '' : "#{pre}#{sig}"
+        end
+      end
+    end
+  end
+
   module Commands
     class << self
       def extend_by_revision(tf_version, object)
@@ -117,7 +180,29 @@ module Terradactyl
     end
     # rubocop:enable Metrics/AbcSize
 
+    def upgrade
+      Upgrade.error_unsupported
+    end
+
     private
+
+    def perform_upgrade
+      options = command_options.tap { |dat| dat.yes = true }
+      upgrade = Upgrade.new(dir_or_plan: nil, options: options)
+      req_ver = /((?:\n\s)*required_version\s=\s)".*"/m
+      result  = upgrade.execute
+
+      if result.zero?
+        settings = File.read('versions.tf').lstrip
+        settings.sub!(req_ver, %{#{$1}"~> #{upgrade.version}"})
+
+        if File.write('versions.tf', settings)
+          FileUtils.rm_rf('terradactyl.yaml') if File.exist?('terradactyl.yaml')
+        end
+      end
+
+      result
+    end
 
     def load_plan_file
       Terraform::PlanFile.new(plan_path: plan_file, parser: parser)
@@ -126,8 +211,8 @@ module Terradactyl
     module Rev011
       include Terraform::Commands
 
-      def checklist
-        Checklist.execute(dir_or_plan: nil, options: command_options)
+      def upgrade
+        perform_upgrade
       end
 
       private
@@ -140,6 +225,10 @@ module Terradactyl
     module Rev012
       include Terraform::Commands
 
+      def upgrade
+        perform_upgrade
+      end
+
       private
 
       def parser
@@ -149,6 +238,10 @@ module Terradactyl
 
     module Rev013
       include Terraform::Commands
+
+      def upgrade
+        perform_upgrade
+      end
 
       private
 

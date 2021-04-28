@@ -399,6 +399,21 @@ module Terradactyl
         exit 1
       end
     end
+
+    desc 'upgrade NAME', 'Upgrade an individual stack, by name', hide: false
+    def upgrade(name)
+      @stack ||= Stack.new(name)
+      print_warning "Upgrading: #{@stack.name}"
+      if @stack.upgrade.zero?
+        print_ok "Upgraded: #{@stack.name}"
+      else
+        Stacks.error!(@stack)
+        print_crit "Failed to upgrade: #{@stack.name}"
+      end
+    rescue Terradactyl::Terraform::Commands::UnsupportedCommandError => e
+      print_crit "Error: #{e.message}"
+      exit 1
+    end
   end
   # rubocop:enable Metrics/ClassLength
 end
