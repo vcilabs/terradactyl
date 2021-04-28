@@ -4,14 +4,17 @@ RSpec.describe Terradactyl::CLI do
 
   let(:unlinted) do
     <<~LINT_ME
-      resource "null_resource" "unlinted"
-      {}
+      resource "null_resource" "unlinted"{}
     LINT_ME
   end
 
   let(:tmpdir) { Dir.mktmpdir('rspec_terradactyl') }
 
-  let(:num_of_stacks) { Dir["#{tmpdir}/stacks/*"].size }
+  let(:known_stacks) { Dir["#{tmpdir}/stacks/*"] }
+
+  let(:num_of_stacks) { known_stacks.size }
+
+  let(:target_stack) { known_stacks.shuffle.first }
 
   before(:each) do
     cp_fixtures(tmpdir)
@@ -34,7 +37,7 @@ RSpec.describe Terradactyl::CLI do
     end
 
     it 'displays a list of Terraform stacks' do
-      expect(command.stdout).to include '* stack_a'
+      expect(command.stdout).to include '* rev'
       expect(command.exitstatus).to eq(0)
     end
   end
@@ -75,7 +78,7 @@ RSpec.describe Terradactyl::CLI do
 
     context 'with valid stack_name' do
       let(:command) do
-        exe('terradactyl quickplan stack_a', tmpdir)
+        exe("terradactyl quickplan #{target_stack}", tmpdir)
       end
 
       it 'displays a plan' do
@@ -86,7 +89,7 @@ RSpec.describe Terradactyl::CLI do
 
     context 'with valid relative path' do
       let(:command) do
-        exe('terradactyl quickplan stacks/stack_a', tmpdir)
+        exe("terradactyl quickplan stacks/#{target_stack}", tmpdir)
       end
 
       it 'displays a plan' do
@@ -206,7 +209,7 @@ RSpec.describe Terradactyl::CLI do
   describe 'lint' do
     context 'stack requires no formatting' do
       let(:command) do
-        exe('terradactyl lint stack_a', tmpdir)
+        exe("terradactyl lint #{target_stack}", tmpdir)
       end
 
       it 'does nothing' do
@@ -219,12 +222,12 @@ RSpec.describe Terradactyl::CLI do
       before do
         pwd = Dir.pwd
         Dir.chdir tmpdir
-        File.write('stacks/stack_a/unlinted.tf', unlinted)
+        File.write("#{target_stack}/unlinted.tf", unlinted)
         Dir.chdir pwd
       end
 
       let(:command) do
-        exe('terradactyl lint stack_a', tmpdir)
+        exe("terradactyl lint #{target_stack}", tmpdir)
       end
 
       it 'displays a formatting error' do
@@ -236,12 +239,60 @@ RSpec.describe Terradactyl::CLI do
 
   describe 'fmt' do
     let(:command) do
-      exe('terradactyl fmt stack_a', tmpdir)
+      exe("terradactyl fmt #{target_stack}", tmpdir)
     end
 
     it 'displays a formatting error' do
       expect(command.stdout).to include 'Formatted'
       expect(command.exitstatus).to eq(0)
+    end
+  end
+
+  describe 'install' do
+    describe 'terraform' do
+      after(:all) do
+        Terradactyl::Terraform::VersionManager.binaries.each do |file|
+          FileUtils.rm_rf file
+        end
+        Terradactyl::Terraform::VersionManager.reset!
+      end
+
+      let(:valid_expressions) {
+        {
+          ''                                   => /terraform-#{terraform_latest}/,
+          %q{--version="~> 0.14.0"}            => /terraform-0\.14\.\d+/,
+          %q{--version=">= 0.13.0, <= 0.14.0"} => /terraform-0\.14\.\d+/,
+          %q{--version="= 0.11.14"}            => /terraform-0\.11\.14/,
+        }
+      }
+
+      let(:invalid_expressions) {
+        {
+          %q{--version="~>"}                  => 'Invalid version string',
+          %q{--version=">= 0.13.0, <=0.14.0"} => 'Unparsable version string',
+          %q{--version="0"}                   => 'Invalid version string',
+        }
+      }
+
+      context 'when passed a bad version expression' do
+        it 'raises an exception' do
+          invalid_expressions.each do |exp, re|
+            cmd = exe("terradactyl install terraform #{exp}", tmpdir)
+            expect(cmd.stderr).to match(re)
+            expect(cmd.exitstatus).not_to eq(0)
+          end
+        end
+      end
+
+      context 'when passed a valid version expression' do
+        it 'installs the expected version' do
+          valid_expressions.each do |exp, re|
+            cmd = exe("terradactyl install terraform #{exp}", tmpdir)
+            expect(cmd.stdout).to match(re)
+            expect(cmd.exitstatus).to eq(0)
+          end
+        end
+      end
     end
   end
 end

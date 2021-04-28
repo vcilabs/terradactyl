@@ -1,6 +1,70 @@
 # frozen_string_literal: true
 
 module Terradactyl
+  module Terraform
+    module Subcommands
+      module Upgrade
+        def defaults
+          {
+            'yes' => false
+          }
+        end
+
+        def switches
+          %w[
+            yes
+          ]
+        end
+      end
+    end
+
+    module Commands
+      class UnsupportedCommandError < RuntimeError
+        def initialize(msg)
+          super(msg)
+        end
+      end
+
+      class Upgrade < Base
+        ERROR_UNSUPPORTED = <<~ERROR
+          subcommand `upgrade` is not supported on this stack!
+
+                This stack may already be upgraded. Check the stack's specified
+                Terraform version and consult its builtin help for further
+                details.
+        ERROR
+
+        class << self
+          def error_unsupported
+            raise UnsupportedCommandError, ERROR_UNSUPPORTED
+          end
+        end
+
+        def version
+          @version ||= calculate_upgrade(super)
+        end
+
+        private
+
+        def calculate_upgrade(current_version)
+          maj, min, _rev = current_version.split('.')
+          min = min.to_i < 13 ? (min.to_i + 1) : min
+          resolution = VersionManager.resolve("~> #{maj}.#{min}.0")
+          VersionManager.version = resolution
+          VersionManager.install
+          VersionManager.version
+        end
+
+        def subcmd
+          pre = version.slice(/\d+\.\d+/)
+          sig = self.class.name.split('::').last.downcase
+          sig == 'base' ? '' : "#{pre}#{sig}"
+        end
+      end
+    end
+  end
+
+  # rubocop:disable Metrics/ModuleLength
   module Commands
     class << self
       def extend_by_revision(tf_version, object)
@@ -63,18 +127,17 @@ module Terradactyl
                               options: options,
                               capture: true)
 
-      output = case captured.exitstatus
-               when 0
-                 'No changes. Infrastructure is up-to-date.'
-               when 1
-                 captured.stderr
-               when 2
-                 captured.stdout
-               end
+      @plan_file_obj = load_plan_file
 
-      @plan_file_obj             = load_plan_file
-      @plan_file_obj.plan_output = output
-      @plan_file_obj.save
+      case captured.exitstatus
+      when 0
+        'No changes. Infrastructure is up-to-date.'
+      when 1
+        @plan_file_obj.error_output = captured.stderr
+      when 2
+        @plan_file_obj.plan_output = captured.stdout
+        @plan_file_obj.save
+      end
 
       captured.exitstatus
     end
@@ -118,7 +181,29 @@ module Terradactyl
     end
     # rubocop:enable Metrics/AbcSize
 
+    def upgrade
+      Upgrade.error_unsupported
+    end
+
     private
+
+    def perform_upgrade
+      options = command_options.tap { |dat| dat.yes = true }
+      upgrade = Upgrade.new(dir_or_plan: nil, options: options)
+      req_ver = /((?:\n\s)*required_version\s=\s)".*"/m
+      result  = upgrade.execute
+
+      if result.zero?
+        settings = File.read('versions.tf').lstrip
+        settings.sub!(req_ver, %(#{Regexp.last_match(1)}"~> #{upgrade.version}"))
+
+        if File.write('versions.tf', settings)
+          FileUtils.rm_rf('terradactyl.yaml') if File.exist?('terradactyl.yaml')
+        end
+      end
+
+      result
+    end
 
     def load_plan_file
       Terraform::PlanFile.new(plan_path: plan_file, parser: parser)
@@ -127,8 +212,8 @@ module Terradactyl
     module Rev011
       include Terraform::Commands
 
-      def checklist
-        Checklist.execute(dir_or_plan: nil, options: command_options)
+      def upgrade
+        perform_upgrade
       end
 
       private
@@ -141,6 +226,10 @@ module Terradactyl
     module Rev012
       include Terraform::Commands
 
+      def upgrade
+        perform_upgrade
+      end
+
       private
 
       def parser
@@ -151,11 +240,36 @@ module Terradactyl
     module Rev013
       include Terraform::Commands
 
+      def upgrade
+        perform_upgrade
+      end
+
       private
 
       def parser
-        Terraform::Rev012::PlanFileParser
+        Terraform::Rev013::PlanFileParser
+      end
+    end
+
+    module Rev014
+      include Terraform::Commands
+
+      private
+
+      def parser
+        Terraform::Rev014::PlanFileParser
+      end
+    end
+
+    module Rev015
+      include Terraform::Commands
+
+      private
+
+      def parser
+        Terraform::Rev015::PlanFileParser
       end
     end
   end
+  # rubocop:enable Metrics/ModuleLength
 end

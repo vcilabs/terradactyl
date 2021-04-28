@@ -48,6 +48,10 @@ module Terradactyl
       print_content(plan_file_obj.plan_output)
     end
 
+    def print_error
+      print_content(plan_file_obj.error_output)
+    end
+
     def plan_file_obj
       @plan_file_obj ||= load_plan_file
     end

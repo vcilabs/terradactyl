@@ -1,4 +1,81 @@
 module Helpers
+  class << self
+    def terraform_test_matrix
+      {
+        rev011: {
+          version: '~> 0.11.14',
+          upgradeable: true,
+          artifacts: {
+            plan:          'rev011.tfout',
+            init:          '.terraform',
+            plan_file_obj: '.terraform/terradactyl.planfile.data',
+            apply:         'terraform.tfstate',
+            refresh:       'terraform.tfstate.backup',
+            destroy:       'terraform.tfstate.backup',
+            lint:          'unlinted.tf',
+            validate:      'invalid.tf',
+          }
+        },
+        rev012: {
+          version: '~> 0.12.30',
+          upgradeable: true,
+          artifacts: {
+            plan:          'rev012.tfout',
+            init:          '.terraform',
+            plan_file_obj: '.terraform/terradactyl.planfile.data',
+            apply:         'terraform.tfstate',
+            refresh:       'terraform.tfstate.backup',
+            destroy:       'terraform.tfstate.backup',
+            lint:          'unlinted.tf',
+            validate:      'invalid.tf',
+          }
+        },
+        rev013: {
+          version: '~> 0.13.6',
+          upgradeable: true,
+          artifacts: {
+            plan:          'rev013.tfout',
+            plan_file_obj: '.terraform/terradactyl.planfile.data',
+            init:          '.terraform',
+            apply:         'terraform.tfstate',
+            refresh:       'terraform.tfstate',
+            destroy:       'terraform.tfstate',
+            lint:          'unlinted.tf',
+            validate:      'invalid.tf',
+          }
+        },
+        rev014: {
+          version: '~> 0.14.10',
+          upgradeable: false,
+          artifacts: {
+            plan:          'rev014.tfout',
+            plan_file_obj: '.terraform/terradactyl.planfile.data',
+            init:          '.terraform',
+            apply:         'terraform.tfstate',
+            refresh:       'terraform.tfstate',
+            destroy:       'terraform.tfstate',
+            lint:          'unlinted.tf',
+            validate:      'invalid.tf',
+          }
+        },
+        rev015: {
+          version: '~> 0.15.0',
+          upgradeable: false,
+          artifacts: {
+            plan:          'rev015.tfout',
+            plan_file_obj: '.terraform/terradactyl.planfile.data',
+            init:          '.terraform',
+            apply:         'terraform.tfstate',
+            refresh:       'terraform.tfstate',
+            destroy:       'terraform.tfstate',
+            lint:          'unlinted.tf',
+            validate:      'invalid.tf',
+          }
+        },
+      }
+    end
+  end
+
   @@original_cwd    = File.dirname(__FILE__)
   @@original_stderr = $stderr
   @@original_stdout = $stdout
@@ -11,34 +88,6 @@ module Helpers
   def enable_output
     $stderr = @@original_stderr
     $stdout = @@original_stdout
-  end
-
-  def terraform_build_artifacts(stack)
-    OpenStruct.new({
-      init:          "#{stack.path}/.terraform",
-      plan_file_obj: "#{stack.path}/.terraform/terradactyl.planfile.data",
-      plan:          "#{stack.path}/#{stack.name}.tfout",
-      apply:         "#{stack.path}/terraform.tfstate",
-      refresh:       "#{stack.path}/terraform.tfstate.backup",
-      destroy:       "#{stack.path}/terraform.tfstate.backup",
-      lint:          "#{stack.path}/unlinted.tf",
-      validate:      "#{stack.path}/invalid.tf",
-      checklist:     "#{stack.path}/checklist.tf",
-    })
-  end
-
-  def terraform_cmd_artifacts(stack_path)
-    stack_name = stack_path.split('/').last
-    OpenStruct.new({
-      init:     "#{stack_path}/.terraform",
-      plan:     "#{stack_path}/#{stack_name}.tfout",
-      apply:    "#{stack_path}/terraform.tfstate",
-      refresh:  "#{stack_path}/terraform.tfstate.backup",
-      destroy:  "#{stack_path}/terraform.tfstate.backup",
-      lint:     "#{stack_path}/unlinted.tf",
-      validate: "#{stack_path}/invalid.tf",
-      checklist: "#{stack_path}/checklist.tf",
-    })
   end
 
   def original_work_dir
@@ -90,23 +139,10 @@ module Helpers
   end
 
   def terraform_latest
-    calculate_latest
+    Terradactyl::Terraform::VersionManager.latest
   end
 
-  def calculate_latest
-    fh = Downloader.fetch(downloads_url)
-    re = %r{#{releases_url}\/(?<version>\d+\.\d+\.\d+)}
-    fh.read.match(re)['version']
-  ensure
-    fh.close
-    fh.unlink
-  end
-
-  def downloads_url
-    'https://www.terraform.io/downloads.html'
-  end
-
-  def releases_url
-    'https://releases.hashicorp.com/terraform'
+  def terraform_resolve(expression)
+    Terradactyl::Terraform::VersionManager.resolve(expression)
   end
 end

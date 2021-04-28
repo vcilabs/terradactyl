@@ -1,5 +1,21 @@
 # CHANGELOG
 
+## 0.15.0 (2021-04-27)
+
+NEW FEATURES:
+
+* add support for Terraform version `0.14.x`
+* add support for Terraform version `0.15.x`
+* add new subcommand `install`
+  * generic component installation; presently only supports `terraform`
+    - permits on-demand installation of any available Terraform binary
+* add new subcommand `upgrade`
+  * performs a Terraform upgrade of the target stack
+* add support for native HCL Terraform contraints
+  * terradactyl will now search for Terraform version contraints in the following files: `settings.tf`, `versions.tf` and `backend.tf`
+* update version expression parsing to match Terraform's own
+  * terradactyl version expression parsing should now operate the same way Terraform's own does, including support for version ranges
+
 ## 0.13.2 (2020-12-09)
 
 BUG FIXES:

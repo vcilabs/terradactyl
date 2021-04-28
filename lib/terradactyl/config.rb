@@ -132,6 +132,12 @@ module Terradactyl
   end
 
   class ConfigStack < ConfigApplication
+    TERRAFORM_SETTINGS_FILES = %w[
+      settings.tf
+      versions.tf
+      backend.tf
+    ].freeze
+
     attr_reader :stack_name, :stack_path, :base_folder
 
     def initialize(stack_name)
@@ -162,6 +168,45 @@ module Terradactyl
 
     def plan_path
       "#{stack_path}/#{plan_file}"
+    end
+
+    private
+
+    def terraform_required_version
+      matches = TERRAFORM_SETTINGS_FILES.map do |file|
+        path = File.join(stack_path, file)
+        if File.exist?(path)
+          File.read(path).match(terraform_required_version_re)
+        end
+      end
+
+      return {} unless matches.compact!.any?
+
+      {
+        'terradactyl' => {
+          'terraform' => {
+            'version' => matches.last[:version]
+          }
+        }
+      }
+    end
+
+    def load_overlay(config_file)
+      overlay = super(config_file)
+
+      unless overlay_specifies_version?(overlay)
+        overlay.merge!(terraform_required_version)
+      end
+
+      overlay
+    end
+
+    def overlay_specifies_version?(overlay)
+      overlay['terradactyl']&.fetch('terraform', {})&.fetch('version', nil)
+    end
+
+    def terraform_required_version_re
+      /(?:\s*terraform\s*{(?:\n|\s)*.+required_version\s*=\s*)"(?<version>.*)"(?:(?:\n|\s)*.+})/m
     end
   end
 end

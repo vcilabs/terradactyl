@@ -1,7 +1,7 @@
 require 'spec_helper'
 
 RSpec.describe Terradactyl::ConfigStack do
-  let(:stack_name) { 'stack_a' }
+  let(:stack_name) { 'rev011' }
   let(:tmpdir) { Dir.mktmpdir('rspec_terradactyl') }
 
   before(:each) do
@@ -29,8 +29,7 @@ RSpec.describe Terradactyl::ConfigStack do
   end
 
   context 'when stack-level config file is NOT present' do
-    let(:stack_name) { 'stack_c' }
-
+    let(:stack_name) { 'configless' }
     subject { described_class.new(stack_name) }
 
     describe '#terradactyl' do
@@ -45,11 +44,46 @@ RSpec.describe Terradactyl::ConfigStack do
         expect(subject.terraform.version).to eq(terraform_minimum)
       end
     end
+
+    context 'when a Terraform version is expressed in .tf' do
+      describe '#terraform.version' do
+        let(:terraform_settings) do
+          <<~LINT_ME
+
+            terraform {
+
+              required_providers {
+                archive = {
+                  source = "hashicorp/archive"
+                }
+                aws = {
+                  source = "hashicorp/aws"
+                }
+              }
+
+              required_version = ">= 0.13"
+            }
+
+          LINT_ME
+        end
+
+        before do
+          FileUtils.mkdir_p("stacks/#{stack_name}")
+          File.write("stacks/#{stack_name}/settings.tf", terraform_settings)
+        end
+
+        after do
+          FileUtils.rm_rf("stacks/#{stack_name}")
+        end
+
+        it 'returns the version specified by Terraform settings' do
+          expect(subject.terraform.version).to eq(">= 0.13")
+        end
+      end
+    end
   end
 
   context 'when stack-level config file _is_ present' do
-    let(:stack_name) { 'stack_a' }
-
     subject { described_class.new(stack_name) }
 
     describe '#terradactyl' do
@@ -73,6 +107,43 @@ RSpec.describe Terradactyl::ConfigStack do
     describe '#base_folder' do
       it 'ignores the stack-level config' do
         expect(subject.base_folder).to eq('stacks')
+      end
+    end
+
+    context 'when a Terraform version is expressed in .tf' do
+      describe '#terraform.version' do
+        let(:terraform_settings) do
+          <<~LINT_ME
+
+            terraform {
+
+              required_providers {
+                archive = {
+                  source = "hashicorp/archive"
+                }
+                aws = {
+                  source = "hashicorp/aws"
+                }
+              }
+
+              required_version = ">= 0.13"
+            }
+
+          LINT_ME
+        end
+
+        before do
+          FileUtils.mkdir_p("stacks/#{stack_name}")
+          File.write("stacks/#{stack_name}/settings.tf", terraform_settings)
+        end
+
+        after do
+          FileUtils.rm_rf("stacks/#{stack_name}")
+        end
+
+        it 'returns the version specified by Terradactyl' do
+          expect(subject.terraform.version).to eq(terraform_legacy)
+        end
       end
     end
   end
