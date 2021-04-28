@@ -44,7 +44,7 @@ RSpec.describe Terradactyl::Stacks do
           expect(subject.validate('stack_a')).to be_truthy
         end
       end
-      context 'when the specifed stack does NOT exist' do
+      context 'when the specified stack does NOT exist' do
         it 'returns true' do
           expect(subject.validate('foo')).to be_falsey
         end
