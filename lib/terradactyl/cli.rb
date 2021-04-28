@@ -312,13 +312,7 @@ module Terradactyl
       print_ok "Cleaned: #{@stack.name}"
     end
 
-    #################################################################
-    # HIDDEN TARGETED STACK TASKS
-    # * These tasks are destructive in nature and do not require
-    # regular use.
-    #################################################################
-
-    desc 'apply NAME', 'Apply an individual stack, by name', hide: true
+    desc 'apply NAME', 'Apply an individual stack, by name'
     def apply(name)
       @stack ||= Stack.new(name)
       print_warning "Applying: #{@stack.name}"
@@ -330,7 +324,7 @@ module Terradactyl
       end
     end
 
-    desc 'refresh NAME', 'Refresh state on an individual stack, by name', hide: true
+    desc 'refresh NAME', 'Refresh state on an individual stack, by name'
     def refresh(name)
       @stack ||= Stack.new(name)
       print_crit "Refreshing: #{@stack.name}"
@@ -342,7 +336,7 @@ module Terradactyl
       end
     end
 
-    desc 'destroy NAME', 'Destroy an individual stack, by name', hide: true
+    desc 'destroy NAME', 'Destroy an individual stack, by name'
     def destroy(name)
       @stack ||= Stack.new(name)
       print_crit "Destroying: #{@stack.name}"
@@ -360,7 +354,7 @@ module Terradactyl
     # invoking useful commands.
     #################################################################
 
-    desc 'install COMPONENT', 'Installs specified component', hide: false
+    desc 'install COMPONENT', 'Installs specified component'
     long_desc <<~LONGDESC
 
     The `terradactyl install COMPONENT` subcommand perfoms installations of
@@ -400,7 +394,7 @@ module Terradactyl
       end
     end
 
-    desc 'upgrade NAME', 'Upgrade an individual stack, by name', hide: false
+    desc 'upgrade NAME', 'Upgrade an individual stack, by name'
     def upgrade(name)
       @stack ||= Stack.new(name)
       print_warning "Upgrading: #{@stack.name}"
