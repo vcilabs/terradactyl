@@ -18,7 +18,6 @@ module Terradactyl
       end
     end
 
-    # rubocop:disable Metrics/ModuleLength
     module Commands
       class UnsupportedCommandError < RuntimeError
         def initialize(msg)
@@ -63,9 +62,9 @@ module Terradactyl
         end
       end
     end
-    # rubocop:enable Metrics/ModuleLength
   end
 
+  # rubocop:disable Metrics/ModuleLength
   module Commands
     class << self
       def extend_by_revision(tf_version, object)
@@ -272,4 +271,5 @@ module Terradactyl
       end
     end
   end
+  # rubocop:enable Metrics/ModuleLength
 end
