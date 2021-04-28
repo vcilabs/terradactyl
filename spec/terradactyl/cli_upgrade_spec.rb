@@ -15,7 +15,8 @@ RSpec.describe Terradactyl::CLI do
             exe("terradactyl upgrade #{stack_name}", tmpdir)
           end
 
-          let(:artifact) { "#{tmpdir}/stacks/#{stack_name}/terradactyl.yaml"  }
+          let(:config)   { "#{tmpdir}/stacks/#{stack_name}/terradactyl.yaml"  }
+          let(:versions) { "#{tmpdir}/stacks/#{stack_name}/versions.tf"  }
 
           before(:each) do
             cp_fixtures(tmpdir)
@@ -23,7 +24,9 @@ RSpec.describe Terradactyl::CLI do
 
           it 'upgrades the stack' do
             expect(command.stdout).to include 'Upgraded'
-            expect(File.exist?(artifact)).to be_falsey
+            expect(File.exist?(config)).to be_falsey
+            expect(File.exist?(versions)).to be_truthy
+            expect(File.read(versions)).to match(/required_version\s=\s"~>/)
             expect(command.exitstatus).to eq(0)
           end
         end

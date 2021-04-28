@@ -187,20 +187,69 @@ module Terradactyl
 
     private
 
+    def settings_files
+      Terradactyl::ConfigStack::TERRAFORM_SETTINGS_FILES.select do |file|
+        File.exist?(file)
+      end
+    end
+
+    def update_required_version(upgrade_version)
+      replace_me = /(?<assignment>(?:\n\s)*required_version\s+=\s+)(?<value>".*?")/m
+
+      settings_files.each do |file|
+        settings     = File.read(file)
+        substitution = nil.to_s
+
+        if (req_version = settings.match(replace_me))
+          if file == 'versions.tf'
+            substitution = %(#{req_version[:assignment]}"~> #{upgrade_version}")
+          end
+        end
+
+        settings.sub!(replace_me, substitution)
+
+        File.write(file, settings)
+      end
+    end
+
+    def upgrade_notice
+      output = File.read('versions.tf')
+      insert = output.strip.split("\n").map { |l| "    #{l}" }.join($INPUT_RECORD_SEPARATOR)
+
+      <<~NOTICE
+        This stack has been upgraded to version the described below and its
+        Terradactly config file (if it existed) has been removed.
+
+         #{insert}
+
+         NOTES:
+
+         • ALL Terraform version constraints are now specified in `versions.tf` using
+          the `required_version` directive.
+
+         • If your stack already containedo one or more `required_version` directives,
+          they have been consolidated into a single directive in `versions.tf`.
+
+         • Terraform provider version contraints ARE NOT upgraded automatically. You
+          will need to edit these MANUALLY.
+
+         • Before proceeding. please perform a `terradactyl quickplan` on your stack
+          to ensure the upgraded stack functions.
+      NOTICE
+    end
+
     def perform_upgrade
       options = command_options.tap { |dat| dat.yes = true }
       upgrade = Upgrade.new(dir_or_plan: nil, options: options)
-      req_ver = /((?:\n\s)*required_version\s=\s)".*"/m
-      result  = upgrade.execute
 
-      if result.zero?
-        settings = File.read('versions.tf').lstrip
-        settings.sub!(req_ver, %(#{Regexp.last_match(1)}"~> #{upgrade.version}"))
+      update_required_version(upgrade.version)
 
-        if File.write('versions.tf', settings)
-          FileUtils.rm_rf('terradactyl.yaml') if File.exist?('terradactyl.yaml')
-        end
+      if (result = upgrade.execute).zero?
+        update_required_version(upgrade.version)
+        FileUtils.rm_rf('terradactyl.yaml') if File.exist?('terradactyl.yaml')
       end
+
+      print_content(upgrade_notice)
 
       result
     end
