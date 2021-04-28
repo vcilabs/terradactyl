@@ -15,7 +15,7 @@ RSpec.describe Terradactyl::CLI do
             exe("terradactyl upgrade #{stack_name}", tmpdir)
           end
 
-          let(:artifact) { "#{tmpdir}/stacks/#{stack_name}/#{info[:artifacts][:upgrade]}"  }
+          let(:artifact) { "#{tmpdir}/stacks/#{stack_name}/terradactyl.yaml"  }
 
           before(:each) do
             cp_fixtures(tmpdir)

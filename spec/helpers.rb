@@ -15,7 +15,6 @@ module Helpers
             destroy:       'terraform.tfstate.backup',
             lint:          'unlinted.tf',
             validate:      'invalid.tf',
-            upgrade:       'terradactyl.yaml',
           }
         },
         rev012: {
@@ -31,7 +30,6 @@ module Helpers
             destroy:       'terraform.tfstate.backup',
             lint:          'unlinted.tf',
             validate:      'invalid.tf',
-            upgrade:       'terradactyl.yaml',
           }
         },
         rev013: {
@@ -47,7 +45,6 @@ module Helpers
             destroy:       'terraform.tfstate',
             lint:          'unlinted.tf',
             validate:      'invalid.tf',
-            upgrade:       'terradactyl.yaml',
           }
         },
         rev014: {
@@ -63,7 +60,6 @@ module Helpers
             destroy:       'terraform.tfstate',
             lint:          'unlinted.tf',
             validate:      'invalid.tf',
-            upgrade:       'terradactyl.yaml',
           }
         },
         rev015: {
@@ -79,7 +75,6 @@ module Helpers
             destroy:       'terraform.tfstate',
             lint:          'unlinted.tf',
             validate:      'invalid.tf',
-            upgrade:       'terradactyl.yaml',
           }
         },
       }
