@@ -249,7 +249,7 @@ module Terradactyl
         FileUtils.rm_rf('terradactyl.yaml') if File.exist?('terradactyl.yaml')
       end
 
-      print_content(upgrade_notice)
+      (print_content(upgrade_notice)) if result.zero?
 
       result
     end
