@@ -46,7 +46,7 @@ module Helpers
         },
         rev014: {
           version: '~> 0.14.10',
-          upgradeable: false,
+          upgradeable: true,
           artifacts: {
             plan:          'rev014.tfout',
             plan_file_obj: '.terraform/terradactyl.planfile.data',
@@ -144,5 +144,11 @@ module Helpers
 
   def terraform_resolve(expression)
     Terradactyl::Terraform::VersionManager.resolve(expression)
+  end
+
+  def calculate_upgrade(current_version)
+    maj, min, _rev = current_version.split('.')
+    min = min.to_i < 13 ? (min.to_i + 1) : min
+    VersionManager.resolve("~> #{maj}.#{min}.0")
   end
 end

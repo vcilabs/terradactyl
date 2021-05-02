@@ -19,39 +19,28 @@ module Terradactyl
     end
 
     module Commands
-      class UnsupportedCommandError < RuntimeError
-        def initialize(msg)
-          super(msg)
-        end
-      end
-
       class Upgrade < Base
-        ERROR_UNSUPPORTED = <<~ERROR
-          subcommand `upgrade` is not supported on this stack!
+        def execute
+          VersionManager.install
+          return 0 unless revision.upgradeable?
 
-                This stack may already be upgraded. Check the stack's specified
-                Terraform version and consult its builtin help for further
-                details.
-        ERROR
-
-        class << self
-          def error_unsupported
-            raise UnsupportedCommandError, ERROR_UNSUPPORTED
-          end
+          super
         end
 
-        def version
-          @version ||= calculate_upgrade(super)
+        def next_version
+          @next_version ||= compute_upgrade
         end
 
         private
 
-        def calculate_upgrade(current_version)
-          maj, min, _rev = current_version.split('.')
-          min = min.to_i < 13 ? (min.to_i + 1) : min
-          resolution = VersionManager.resolve("~> #{maj}.#{min}.0")
+        def revision
+          Terradactyl::Stack.revision
+        end
+
+        def compute_upgrade
+          maj, min, _rev = version.split('.')
+          resolution = VersionManager.resolve("~> #{maj}.#{min.to_i + 1}.0")
           VersionManager.version = resolution
-          VersionManager.install
           VersionManager.version
         end
 
@@ -69,9 +58,13 @@ module Terradactyl
     class << self
       def extend_by_revision(tf_version, object)
         anon_module = revision_module
+        revision    = revision_constant(tf_version)
 
         anon_module.include(self)
-        anon_module.prepend(revision_constant(tf_version))
+        anon_module.prepend(revision)
+
+        object.class.define_singleton_method(:revision) { revision }
+        object.define_singleton_method(:revision) { revision }
 
         object.extend(anon_module)
       end
@@ -182,34 +175,69 @@ module Terradactyl
     # rubocop:enable Metrics/AbcSize
 
     def upgrade
-      Upgrade.error_unsupported
+      perform_upgrade
     end
 
     private
 
+    def versions_file
+      'versions.tf'
+    end
+
     def settings_files
-      Terradactyl::ConfigStack::TERRAFORM_SETTINGS_FILES.select do |file|
-        File.exist?(file)
+      Dir.glob('*.tf').each_with_object([]) do |file, memo|
+        File.open(file, 'r').each_line do |line|
+          if line.match(Common.required_versions_re)
+            memo << file
+            break
+          end
+        end
+      end
+    end
+
+    def sanitize_terraform_settings
+      settings_files.each do |file|
+        next if file == versions_file
+
+        write_stream = Tempfile.new(Common.tag)
+        File.open(file, 'r').each_line do |line|
+          write_stream.puts line unless line.match(Common.required_versions_re)
+        end
+        write_stream.close
+        FileUtils.mv(write_stream.path, file)
       end
     end
 
     def update_required_version(upgrade_version)
-      replace_me = /(?<assignment>(?:\n\s)*required_version\s+=\s+)(?<value>".*?")/m
-
-      settings_files.each do |file|
-        settings     = File.read(file)
-        substitution = nil.to_s
-
-        if (req_version = settings.match(replace_me))
-          if file == 'versions.tf'
-            substitution = %(#{req_version[:assignment]}"~> #{upgrade_version}")
-          end
+      if File.exist?(versions_file)
+        settings = File.read(versions_file)
+        if (req_version = settings.match(Common.required_versions_re))
+          substitution = %(#{req_version[:assignment]}"~> #{upgrade_version}")
+          settings.sub!(Common.required_versions_re, substitution)
         end
-
-        settings.sub!(replace_me, substitution)
-
-        File.write(file, settings)
+      else
+        # This is ugly, so let's explain ...
+        #
+        # When the versions.tf is present, but the stack is ~> 0.11.0, the
+        # `terraform 0.12upgrade` subcommand will FAIL because it uses the
+        # presence of this file as the sole gauge as to whether or not
+        # the stack can be upgraded. So, why not just use `-force`? Haha yes ...
+        #
+        # When the `versions.tf` file exists and the `-force` flag is passed,
+        # it will create a `versions-1.tf` file ... FML :facepalm:
+        #
+        # So, make the creation of a de facto versions.tf contingent upon the
+        # Terraform upgrade_version. Yay.
+        unless upgrade_version =~ /0\.12/
+          settings = <<~VERSIONS
+            terraform {
+              required_version = "~> #{upgrade_version}"
+            }
+          VERSIONS
+        end
       end
+
+      File.write(versions_file, settings) if settings
     end
 
     def upgrade_notice
@@ -220,50 +248,74 @@ module Terradactyl
         This stack has been upgraded to version the described below and its
         Terradactly config file (if it existed) has been removed.
 
-         #{insert}
+        #{insert}
 
-         NOTES:
+        NOTES:
 
          • ALL Terraform version constraints are now specified in `versions.tf` using
           the `required_version` directive.
 
-         • If your stack already containedo one or more `required_version` directives,
+         • If your stack already contained one or more `required_version` directives,
           they have been consolidated into a single directive in `versions.tf`.
 
          • Terraform provider version contraints ARE NOT upgraded automatically. You
           will need to edit these MANUALLY.
 
          • Before proceeding. please perform a `terradactyl quickplan` on your stack
-          to ensure the upgraded stack functions.
+          to ensure the upgraded stack functions as intended.
       NOTICE
     end
 
+    def upgrade_notice_rev013
+      <<~NOTICE
+        STOP UPGRADING!
+
+              Upgrading from Terraform 0.12 to 0.13 requires an apply to be performed
+              before continuing ...
+
+              DO NOT attempt to upgrade any further without first committing the existing
+              changes and seeing they are applied.
+
+              See the documentation here if you require more infomation ...
+
+              https://www.terraform.io/upgrade-guides/0-13.html
+      NOTICE
+    end
+
+    # rubocop:disable  Metrics/AbcSize
     def perform_upgrade
       options = command_options.tap { |dat| dat.yes = true }
       upgrade = Upgrade.new(dir_or_plan: nil, options: options)
 
-      update_required_version(upgrade.version)
+      sanitize_terraform_settings
+
+      update_required_version(upgrade.next_version)
 
       if (result = upgrade.execute).zero?
-        update_required_version(upgrade.version)
+        update_required_version(upgrade.next_version)
         FileUtils.rm_rf('terradactyl.yaml') if File.exist?('terradactyl.yaml')
       end
 
-      (print_content(upgrade_notice)) if result.zero?
+      print_content(upgrade_notice) if result.zero?
+
+      print_crit(upgrade_notice_rev013) if upgrade.next_version =~ /0\.13/
 
       result
     end
+    # rubocop:enable  Metrics/AbcSize
 
     def load_plan_file
       Terraform::PlanFile.new(plan_path: plan_file, parser: parser)
     end
 
     module Rev011
-      include Terraform::Commands
-
-      def upgrade
-        perform_upgrade
+      class << self
+        def upgradeable?
+          true
+        end
       end
+
+      include Terraform::Commands
 
       private
 
@@ -273,11 +325,13 @@ module Terradactyl
     end
 
     module Rev012
-      include Terraform::Commands
-
-      def upgrade
-        perform_upgrade
+      class << self
+        def upgradeable?
+          true
+        end
       end
+
+      include Terraform::Commands
 
       private
 
@@ -287,11 +341,13 @@ module Terradactyl
     end
 
     module Rev013
-      include Terraform::Commands
-
-      def upgrade
-        perform_upgrade
+      class << self
+        def upgradeable?
+          false
+        end
       end
+
+      include Terraform::Commands
 
       private
 
@@ -301,6 +357,12 @@ module Terradactyl
     end
 
     module Rev014
+      class << self
+        def upgradeable?
+          false
+        end
+      end
+
       include Terraform::Commands
 
       private
@@ -311,6 +373,12 @@ module Terradactyl
     end
 
     module Rev015
+      class << self
+        def upgradeable?
+          false
+        end
+      end
+
       include Terraform::Commands
 
       private

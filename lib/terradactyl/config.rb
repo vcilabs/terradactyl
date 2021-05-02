@@ -170,13 +170,17 @@ module Terradactyl
       "#{stack_path}/#{plan_file}"
     end
 
+    def versions_file
+      "#{stack_path}/versions.tf"
+    end
+
     private
 
     def terraform_required_version
       matches = TERRAFORM_SETTINGS_FILES.map do |file|
         path = File.join(stack_path, file)
         if File.exist?(path)
-          File.read(path).match(terraform_required_version_re)
+          File.read(path).match(Common.required_versions_re)
         end
       end
 
@@ -185,7 +189,7 @@ module Terradactyl
       {
         'terradactyl' => {
           'terraform' => {
-            'version' => matches.last[:version]
+            'version' => matches.last[:value].delete('"')
           }
         }
       }
@@ -203,10 +207,6 @@ module Terradactyl
 
     def overlay_specifies_version?(overlay)
       overlay['terradactyl']&.fetch('terraform', {})&.fetch('version', nil)
-    end
-
-    def terraform_required_version_re
-      /(?:\s*terraform\s*{(?:\n|\s)*.+required_version\s*=\s*)"(?<version>.*)"(?:(?:\n|\s)*.+})/m
     end
   end
 end
