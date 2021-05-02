@@ -189,7 +189,7 @@ Installs supporting components, namely Terraform itself...
 
 #### upgrade
 
-Upgrade abstracts the various Terraform subcommands related to upgrading individual stacks (`0.12upgrade` and `0.13upgrade`).
+Upgrade abstracts the various Terraform subcommands related to upgrading individual stacks.
 
     terradactyl upgrade <stack>
 

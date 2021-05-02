@@ -1,5 +1,18 @@
 # CHANGELOG
 
+## 0.15.2 (2021-05-02)
+
+NEW FEATURES:
+
+* make all stacks upgradeable, regardless of binary version
+* add warning after upgrading to Terrafrom version 0.13
+* expanded testing
+
+BUG FIXES:
+
+* do not init backend during upgrade
+* fix edge case on stacks with no `versions.tf` file
+
 ## 0.15.1 (2021-04-28)
 
 BUG FIXES:

@@ -1,6 +1,19 @@
 require 'spec_helper'
 
 RSpec.describe Terradactyl::Common do
+  describe '#required_versions_re' do
+    it 'will match a Terraform required_versions setting' do
+      expect(subject.required_versions_re).to be_a(Regexp)
+      expect('required_version = "~> 0.12.31"').to match(subject.required_versions_re)
+    end
+  end
+
+  describe '#supported_revisions' do
+    it 'returns a list of support Terraform revisions' do
+      expect(subject.supported_revisions).to be_a(Array)
+      expect(subject.supported_revisions.first.to_s).to match(/Rev/)
+    end
+  end
 
   describe '#config' do
     it 'initializes the Config object' do

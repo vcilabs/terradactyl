@@ -7,6 +7,14 @@ module Terradactyl
 
     module_function
 
+    def required_versions_re
+      /(?<assignment>(?:\n\s)*required_version\s+=\s+)(?<value>".*?")/m
+    end
+
+    def supported_revisions
+      Terradactyl::Commands.constants.select { |c| c =~ /Rev/ }.sort
+    end
+
     def config
       @config ||= ConfigProject.instance
     end

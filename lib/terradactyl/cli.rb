@@ -76,8 +76,9 @@ module Terradactyl
         else
           Stacks.error!(@stack)
           print_crit "Failed to upgrade: #{@stack.name}"
+          throw :error
         end
-      rescue Terradactyl::Terraform::Commands::UnsupportedCommandError => e
+      rescue Terradactyl::Terraform::VersionManager::VersionManagerError => e
         print_crit "Error: #{e.message}"
         exit 1
       end
@@ -170,7 +171,7 @@ module Terradactyl
     desc 'upgrade NAME', 'Cleans, inits, upgrades and formats an individual stack, by name'
     def upgrade(name)
       clean(name)
-      init(name)
+      init(name, backend: false)
       upgrade_stack(name)
       fmt(name)
     end
@@ -271,8 +272,10 @@ module Terradactyl
     end
 
     desc 'init NAME', 'Init an individual stack, by name'
-    def init(name)
+    def init(name, backend: true)
       @stack ||= Stack.new(name)
+      @stack.config.terraform.init.backend = backend
+
       print_ok "Initializing: #{@stack.name}"
       if @stack.init.zero?
         print_ok "Initialized: #{@stack.name}"
