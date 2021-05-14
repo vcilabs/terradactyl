@@ -1,5 +1,12 @@
 # CHANGELOG
 
+## 0.15.3 (2021-05-14)
+
+BUG FIXES:
+
+* fix `auto-approve` on `destroy` subcommand for Terraform version 0.15
+* update all tests to use latest minor rev
+
 ## 0.15.2 (2021-05-02)
 
 NEW FEATURES:

@@ -3,7 +3,7 @@ module Helpers
     def terraform_test_matrix
       {
         rev011: {
-          version: '~> 0.11.14',
+          version: '~> 0.11.15',
           upgradeable: true,
           artifacts: {
             plan:          'rev011.tfout',
@@ -17,7 +17,7 @@ module Helpers
           }
         },
         rev012: {
-          version: '~> 0.12.30',
+          version: '~> 0.12.31',
           upgradeable: true,
           artifacts: {
             plan:          'rev012.tfout',
@@ -31,7 +31,7 @@ module Helpers
           }
         },
         rev013: {
-          version: '~> 0.13.6',
+          version: '~> 0.13.7',
           upgradeable: true,
           artifacts: {
             plan:          'rev013.tfout',
@@ -45,7 +45,7 @@ module Helpers
           }
         },
         rev014: {
-          version: '~> 0.14.10',
+          version: '~> 0.14.11',
           upgradeable: true,
           artifacts: {
             plan:          'rev014.tfout',
@@ -59,7 +59,7 @@ module Helpers
           }
         },
         rev015: {
-          version: '~> 0.15.0',
+          version: '~> 0.15.3',
           upgradeable: false,
           artifacts: {
             plan:          'rev015.tfout',
@@ -135,7 +135,7 @@ module Helpers
   end
 
   def terraform_legacy
-    '0.11.14'
+    terraform_resolve('~> 0.11.0')
   end
 
   def terraform_latest
