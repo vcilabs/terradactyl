@@ -26,7 +26,7 @@ module Terradactyl
             input: false
           destroy:
             parallelism: 5
-            force: true
+            auto_approve: true
         environment:
           TF_PLUGIN_CACHE_DIR: ~/.terraform.d/plugins
         misc:
