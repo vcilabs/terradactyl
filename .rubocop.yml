@@ -10,6 +10,8 @@ Metrics/CyclomaticComplexity:
   Max: 10
 Metrics/ClassLength:
   Max: 115
+Naming/ClassAndModuleCamelCase:
+  Enabled: false
 Naming/UncommunicativeMethodParamName:
   MinNameLength: 2
 Style/IfUnlessModifier:

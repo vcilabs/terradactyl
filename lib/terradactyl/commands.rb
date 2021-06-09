@@ -98,8 +98,8 @@ module Terradactyl
       end
 
       def revision_constant(tf_version)
-        revision_name = ['Rev', *tf_version.split('.').take(2)].join
-        const_get(revision_name)
+        revision = Terradactyl::Terraform.calc_revision(tf_version)
+        const_get(revision)
       end
     end
 
@@ -385,6 +385,22 @@ module Terradactyl
 
       def parser
         Terraform::Rev015::PlanFileParser
+      end
+    end
+
+    module Rev1_00
+      class << self
+        def upgradeable?
+          false
+        end
+      end
+
+      include Terraform::Commands
+
+      private
+
+      def parser
+        Terraform::Rev1_00::PlanFileParser
       end
     end
   end
