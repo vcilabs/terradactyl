@@ -177,14 +177,20 @@ module Terradactyl
     private
 
     def terraform_required_version
-      matches = TERRAFORM_SETTINGS_FILES.map do |file|
+      matches = TERRAFORM_SETTINGS_FILES.each_with_object([]) do |file, memo|
         path = File.join(stack_path, file)
-        if File.exist?(path)
-          File.read(path).match(Common.required_versions_re)
+        next unless File.exist?(path)
+
+        File.readlines(path).each do |line|
+          next if line =~ /(?:\s*#\s*)/
+
+          if (match = line.match(Common.required_versions_re))
+            memo << match
+          end
         end
       end
 
-      return {} unless matches.compact!.any?
+      return {} unless matches.any?
 
       {
         'terradactyl' => {
