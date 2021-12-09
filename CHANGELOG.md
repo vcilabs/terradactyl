@@ -1,5 +1,19 @@
 # CHANGELOG
 
+## 1.1.0 (2021-12-09)
+
+NEW FEATURES:
+
+* add support for Terraform version '~> 1.1.0`
+
+DEPENDENCIES:
+
+* update depends on terradactyl-terraform to '>= 1.1.0'
+
+UPGRADEABLE:
+
+* set '~> 1.0.0` as upgradeable
+
 ## 1.0.0 (2021-06-09)
 
 NEW FEATURES:
