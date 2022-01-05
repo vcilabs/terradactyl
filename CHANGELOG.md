@@ -1,5 +1,15 @@
 # CHANGELOG
 
+## 1.1.2 (2021-01-05)
+
+BUG FIX:
+
+* Align with changes to terradactyl-terraform (v1.1.2)
+
+```
+/var/lib/gems/2.7.0/gems/terradactyl-1.1.0/lib/terradactyl/stack.rb:73:in `block in setup_terraform': undefined method `downloads_url=' for Terradactyl::Terraform::VersionManager:Module (NoMethodError)
+```
+
 ## 1.1.0 (2021-12-09)
 
 NEW FEATURES:

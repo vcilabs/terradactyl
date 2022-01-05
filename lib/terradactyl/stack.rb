@@ -69,7 +69,7 @@ module Terradactyl
     end
 
     def setup_terraform
-      %i[install_dir downloads_url releases_url].each do |opt|
+      %i[install_dir releases_url].each do |opt|
         Terraform::VersionManager.send("#{opt}=".to_sym,
                                        config.terraform.send(opt))
       end
