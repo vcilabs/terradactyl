@@ -5,8 +5,8 @@ require 'terradactyl/version'
 Gem::Specification.new do |spec|
   spec.name        = "terradactyl"
   spec.version     = Terradactyl::VERSION
-  spec.authors     = ["Brian Warsing"]
-  spec.email       = ["brian.warsing@alida.com"]
+  spec.authors     = ["Brian Warsing", "Wade Peacock"]
+  spec.email       = ["brian.warsing@alida.com", "wade.peacock@alida.com"]
   spec.license     = 'MIT'
   spec.summary     = %{Manage a Terraform monorepo}
   spec.description = %{Provides facility to manage a large Terraform monorepo}
@@ -14,7 +14,7 @@ Gem::Specification.new do |spec|
 
   spec.metadata['homepage_uri']      = spec.homepage
   spec.metadata['source_code_uri']   = spec.homepage
-  spec.metadata['changelog_uri']     = %{#{spec.homepage}/CHANGELOG.md}
+  spec.metadata['changelog_uri']     = %{#{spec.homepage}/blob/main/CHANGELOG.md}
   spec.metadata['allowed_push_host'] = 'https://rubygems.org'
 
   spec.required_ruby_version = '>= 2.5.0'
@@ -33,7 +33,7 @@ Gem::Specification.new do |spec|
   spec.add_dependency 'deep_merge', '~> 1.2'
   spec.add_dependency 'bundler', '>= 1.16'
   spec.add_dependency 'rake', '>= 10.0'
-  spec.add_dependency 'terradactyl-terraform', '>= 1.1.0'
+  spec.add_dependency 'terradactyl-terraform', '>= 1.2.0'
 
   spec.add_development_dependency 'rspec', '~> 3.0'
   spec.add_development_dependency 'pry', '~> 0.12'
