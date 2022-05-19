@@ -1,5 +1,15 @@
 # CHANGELOG
 
+## 1.2.0 (2022-05-18)
+
+NEW FEATURES:
+
+* add support for Terraform version '~> 1.2.0`
+
+BUG FIX:
+
+* fix CHANGELOG.md URL in gemspec
+
 ## 1.1.2 (2021-01-05)
 
 BUG FIX:
