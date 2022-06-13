@@ -1,5 +1,11 @@
 # CHANGELOG
 
+## 1.2.1 (2022-06-13)
+
+BUG FIX:
+
+* update depends on terradactyl-terraform to '>= 1.2.1'
+
 ## 1.2.0 (2022-05-18)
 
 NEW FEATURES:
