@@ -5,6 +5,7 @@ module Terradactyl
     module Subcommands
       module Upgrade
         def defaults
+          puts 'inside Commands.defaults'
           {
             'yes' => false
           }
