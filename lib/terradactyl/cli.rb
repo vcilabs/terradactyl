@@ -42,7 +42,7 @@ module Terradactyl
 
       def validate_smartplan(stacks)
         if stacks.empty?
-          print_message 'No Stacks Modified ...'
+          print_message "No Stacks Modified ..."
           print_line 'Did you forget to `git add` your selected changes?'
         end
         stacks
@@ -68,9 +68,9 @@ module Terradactyl
         Terradactyl::Terraform::VersionManager.latest
       end
 
-      def upgrade_stack(name)
-        @stack ||= Stack.new(name)
-        print_warning "Upgrading: #{@stack.name}"
+      def upgrade_stack(name, base_override="")
+        @stack ||= Stack.new(name, base_override)
+        print_warning "Upgrading in #{config.base_folder}: #{@stack.name}"
         if @stack.upgrade.zero?
           print_ok "Upgraded: #{@stack.name}"
         else
@@ -126,37 +126,37 @@ module Terradactyl
       end
     end
 
-    desc 'smartplan', 'Plan any stacks that differ from Git HEAD'
-    def smartplan
+    desc 'smartplan [BASE_FOLDER]', 'Plan any stacks that differ from Git HEAD, with optional base folder override'
+    def smartplan(base_override="")
       print_header 'SmartPlanning Stacks ...'
-      stacks = Stacks.load(filter: StacksPlanFilterGitDiffHead.new)
+      stacks = Stacks.load(filter: StacksPlanFilterGitDiffHead.new, base_override: base_override)
       validate_smartplan(stacks).each do |name|
-        clean(name)
-        init(name)
-        plan(name)
+        clean(name, base_override)
+        init(name, base_override)
+        plan(name, base_override)
         @stack = nil
       end
     end
 
-    desc 'smartapply', 'Apply any stacks that contain plan files', hide: true
-    def smartapply
+    desc 'smartapply', 'Apply any stacks that contain plan files, with optional base folder override', hide: true
+    def smartapply(base_override="")
       print_header 'SmartApplying Stacks ...'
-      stacks = Stacks.load(filter: StacksApplyFilterPrePlanned.new)
-      print_warning 'No stacks contain plan files ...' unless stacks.any?
+      stacks = Stacks.load(filter: StacksApplyFilterPrePlanned.new, base_override: base_override)
+      print_warning "No stacks contain plan files ..." unless stacks.any?
       stacks.each do |name|
-        apply(name)
+        apply(name, base_override)
         @stack = nil
       end
       print_message "Total Stacks Modified: #{stacks.size}"
     end
 
-    desc 'smartrefresh', 'Refresh any stacks that contain plan files', hide: true
-    def smartrefresh
+    desc 'smartrefresh [BASE_FOLDER]', 'Refresh any stacks that contain plan files, with optional base folder override', hide: true
+    def smartrefresh(base_override="")
       print_header 'SmartRefreshing Stacks ...'
-      stacks = Stacks.load(filter: StacksApplyFilterPrePlanned.new)
+      stacks = Stacks.load(filter: StacksApplyFilterPrePlanned.new, base_override: base_override)
       print_warning 'No stacks contain plan files ...' unless stacks.any?
       stacks.each do |name|
-        refresh(name)
+        refresh(name, base_override)
         @stack = nil
       end
       print_message "Total Stacks Refreshed: #{stacks.size}"
@@ -168,20 +168,20 @@ module Terradactyl
     # the `quickplan` task is an exception to this rule.
     #################################################################
 
-    desc 'upgrade NAME', 'Cleans, inits, upgrades and formats an individual stack, by name'
-    def upgrade(name)
-      clean(name)
-      init(name, backend: false)
-      upgrade_stack(name)
-      fmt(name)
+    desc 'upgrade NAME [BASE_FOLDER]', 'Cleans, inits, upgrades and formats an individual stack, by name and optional base folder override'
+    def upgrade(name, base_override="")
+      clean(name, base_override)
+      init(name, base_override, backend: false)
+      upgrade_stack(name, base_override)
+      fmt(name, base_override)
     end
 
-    desc 'quickplan NAME', 'Clean, init and plan a stack, by name'
-    def quickplan(name)
+    desc 'quickplan NAME [BASE_FOLDER]', 'Clean, init and plan a stack, by name and optional base folder override'
+    def quickplan(name, base_override="")
       print_header "Quick planning #{name} ..."
-      clean(name)
-      init(name)
-      plan(name)
+      clean(name, base_override)
+      init(name, base_override)
+      plan(name, base_override)
     end
 
     desc 'clean-all', 'Clean all stacks'
@@ -206,18 +206,18 @@ module Terradactyl
       end
     end
 
-    desc 'audit-all', 'Audit all stacks'
+    desc 'audit-all [BASE_FOLDER]', 'Audit all stacks'
     options report: :optional
     method_option :report, type: :boolean
     # rubocop:disable Metrics/AbcSize
-    def audit_all
+    def audit_all(base_override="")
       report = { start: Time.now.to_json }
       print_header 'Auditing ALL Stacks ...'
       Stacks.load.each do |name|
         catch(:error) do
-          clean(name)
-          init(name)
-          audit(name)
+          clean(name, base_override)
+          init(name, base_override)
+          audit(name, base_override)
         end
         @stack = nil
       end
@@ -247,9 +247,9 @@ module Terradactyl
     # * These tasks are used regularly against stacks, by name.
     #################################################################
 
-    desc 'lint NAME', 'Lint an individual stack, by name'
-    def lint(name)
-      @stack ||= Stack.new(name)
+    desc 'lint NAME [BASE_FOLDER]', 'Lint an individual stack, by name and optional base folder override'
+    def lint(name, base_override="")
+      @stack ||= Stack.new(name, base_override)
       print_ok "Linting: #{@stack.name}"
       if @stack.lint.zero?
         print_ok "Formatting OK: #{@stack.name}"
@@ -259,9 +259,9 @@ module Terradactyl
       end
     end
 
-    desc 'fmt NAME', 'Format an individual stack, by name'
-    def fmt(name)
-      @stack ||= Stack.new(name)
+    desc 'fmt NAME [BASE_FOLDER]', 'Format an individual stack, by name and optional base folder override'
+    def fmt(name, base_override="")
+      @stack ||= Stack.new(name, base_override)
       print_warning "Formatting: #{@stack.name}"
       if @stack.fmt.zero?
         print_ok "Formatted: #{@stack.name}"
@@ -271,12 +271,12 @@ module Terradactyl
       end
     end
 
-    desc 'init NAME', 'Init an individual stack, by name'
-    def init(name, backend: true)
-      @stack ||= Stack.new(name)
+    desc 'init NAME [BASE_FOLDER]', 'Init an individual stack, by name and optional base folder override'
+    def init(name, base_override="", backend: true)
+      @stack ||= Stack.new(name, base_override)
       @stack.config.terraform.init.backend = backend
 
-      print_ok "Initializing: #{@stack.name}"
+      print_ok "Initializing in #{config.base_folder}: #{@stack.name}"
       if @stack.init.zero?
         print_ok "Initialized: #{@stack.name}"
       else
@@ -286,11 +286,11 @@ module Terradactyl
       end
     end
 
-    desc 'plan NAME', 'Plan an individual stack, by name'
+    desc 'plan NAME [BASE_FOLDER]', 'Plan an individual stack, by name and optional base folder override'
     # rubocop:disable Metrics/AbcSize
-    def plan(name)
-      @stack ||= Stack.new(name)
-      print_ok "Planning: #{@stack.name}"
+    def plan(name, base_override="")
+      @stack ||= Stack.new(name, base_override)
+      print_ok "Planning in #{config.base_folder}: #{@stack.name}"
       case @stack.plan
       when 0
         print_ok "No changes: #{@stack.name}"
@@ -309,19 +309,19 @@ module Terradactyl
     end
     # rubocop:enable Metrics/AbcSize
 
-    desc 'audit NAME', 'Audit an individual stack, by name'
-    def audit(name)
-      plan(name)
-      if (@stack = Stacks.dirty?(name))
+    desc 'audit NAME [BASE_FOLDER]', 'Audit an individual stack, by name and optional base folder override'
+    def audit(name, base_override="")
+      plan(name, base_override)
+      if (@stack = Stacks.dirty?(name)) # TODO
         Stacks.error!(@stack)
         print_crit "Dirty stack: #{@stack.name}"
       end
     end
 
-    desc 'validate NAME', 'Validate an individual stack, by name'
-    def validate(name)
-      @stack ||= Stack.new(name)
-      print_ok "Validating: #{@stack.name}"
+    desc 'validate NAME [BASE_FOLDER]', 'Validate an individual stack, by name and optional base folder override'
+    def validate(name, base_override="")
+      @stack ||= Stack.new(name, base_override)
+      print_ok "Validating in #{config.base_folder}: #{@stack.name}"
       if @stack.validate.zero?
         print_ok "Validated: #{@stack.name}"
       else
@@ -331,18 +331,18 @@ module Terradactyl
       end
     end
 
-    desc 'clean NAME', 'Clean an individual stack, by name'
-    def clean(name)
-      @stack ||= Stack.new(name)
-      print_warning "Cleaning: #{@stack.name}"
+    desc 'clean NAME [BASE_FOLDER]', 'Clean an individual stack, by name and optional base folder override'
+    def clean(name, base_override="")
+      @stack ||= Stack.new(name, base_override)
+      print_warning "Cleaning in #{config.base_folder}: #{@stack.name}"
       @stack.clean
       print_ok "Cleaned: #{@stack.name}"
     end
 
-    desc 'apply NAME', 'Apply an individual stack, by name'
-    def apply(name)
-      @stack ||= Stack.new(name)
-      print_warning "Applying: #{@stack.name}"
+    desc 'apply NAME [BASE_FOLDER]', 'Apply an individual stack, by name and optional base folder override'
+    def apply(name, base_override="")
+      @stack ||= Stack.new(name, base_override)
+      print_warning "Applying in #{config.base_folder}: #{@stack.name}"
       if @stack.apply.zero?
         print_ok "Applied: #{@stack.name}"
       else
@@ -351,10 +351,10 @@ module Terradactyl
       end
     end
 
-    desc 'refresh NAME', 'Refresh state on an individual stack, by name'
-    def refresh(name)
-      @stack ||= Stack.new(name)
-      print_crit "Refreshing: #{@stack.name}"
+    desc 'refresh NAME [BASE_FOLDER]', 'Refresh state on an individual stack, by name and optional base folder override'
+    def refresh(name, base_override="")
+      @stack ||= Stack.new(name, base_override)
+      print_crit "Refreshing in #{config.base_folder}: #{@stack.name}"
       if @stack.refresh.zero?
         print_warning "Refreshed: #{@stack.name}"
       else
@@ -363,9 +363,9 @@ module Terradactyl
       end
     end
 
-    desc 'destroy NAME', 'Destroy an individual stack, by name'
-    def destroy(name)
-      @stack ||= Stack.new(name)
+    desc 'destroy NAME [BASE_FOLDER]', 'Destroy an individual stack, by name and optional base folder override'
+    def destroy(name, base_override="")
+      @stack ||= Stack.new(name, base_override)
       print_crit "Destroying: #{@stack.name}"
       if @stack.destroy.zero?
         print_warning "Destroyed: #{@stack.name}"
