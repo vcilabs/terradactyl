@@ -1,0 +1,7 @@
+---
+terradactyl:
+  base_folder: .
+  terraform:
+    version: 1.0.0
+  misc:
+    base_folder_name: preprod-stacks

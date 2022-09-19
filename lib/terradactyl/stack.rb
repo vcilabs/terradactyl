@@ -51,8 +51,6 @@ module Terradactyl
     end
 
     def print_plan
-      # puts "inside Stack.print_plan, plan_file_obj: #{plan_file_obj}"
-
       print_content(plan_file_obj.plan_output)
     end
 
@@ -87,7 +85,6 @@ module Terradactyl
     end
 
     def validate_stack_name(stack_name)
-      # puts "inside validate_stack_name #{stack_name}"
       klass = self.class.to_s.split('::').last
       unless (valid_name = Stacks.validate(stack_name))
         print_crit("#{klass} not found: #{File.basename(stack_name)}")

@@ -19,7 +19,7 @@ Terradactyl simplifies managing large heterogeneous Terraform monorepos by intro
 
 Requires Ruby 2.5 or greater.
 
-NOTE: Terraform sub-command operations are only supported between stable versions `>= 0.11.x` to `~> 0.15.x`.
+NOTE: Terraform sub-command operations are only supported between stable versions `>= 0.11.x` to `~> 1.2.x`.
 
 ## Installation
 
@@ -43,8 +43,8 @@ And then execute:
 
 Terradactyl repos rely on two simple organizational conventions:
 
-* a single project-level `terradactly.yaml`
-* a single subdirectory for your stacks
+* a single project-level `terradactyl.yaml`
+* subdirectories for your stacks
 
 ```sh
 .
@@ -140,6 +140,20 @@ NOTE: `*.tfstate*` files are not cleaned up by default for obvious reasons, so c
 
 See the [Configuration](#configuration) section for more info on how to control which files get removed during a `clean <stack>` or `clean-all` operation.
 
+#### quickplan a single stack in a non-default subdirectory
+
+If you have a setup with multiple stack subdirectories, you have one stack subdirectory that's referenced by default in the root-level terradactyl.yaml. 
+
+    $ cd examples/multi-stack-subdirectories
+
+Notice that `preprod-stacks` is the base_folder defined in the root terradactyl.yaml. By default, Terradactyl commands will run in this subdirectory.
+
+All subdirectories define their own terradactyl.yaml with customized `base_folder` and `misc.base_folder_name` settings. To run commands on stacks in non-default subdirectories from root, you must pass in the optional BASE_FOLDER input to your Terradactyl command.
+
+    $ terradactyl quickplan stack1               # this command will run quickplan on preprod-stacks/stack1
+    $ terradactyl quickplan stack1 test-stacks   # this command will run quickplan on test-stacks/stack1 
+
+
 ## Operation
 
 NOTE: `terradactyl` (symlinked as `td`) ONLY operates in the root of your monorepo. In order to execute any subcommands, your working directory must contain your project-level configuration file, otherwise you will receive this:
@@ -176,7 +190,7 @@ Terradactyl add some unique utility commands that permit you to more readily man
 Installs supporting components, namely Terraform itself...
 
     # Install the latest terraform binary
-    terradactly install terraform
+    terradactyl install terraform
 
     # Install pessimistic version
     terradactyl install terraform --version="~> 0.13.0"
@@ -201,14 +215,14 @@ Terradactyl provides a few useful meta-commands that can help you avoid repetiti
 
 Clean, initialize and plan a single stack in one operation.
 
-    terradactly quickplan <stack>
+    terradactyl quickplan <stack>
 
 #### smartapply/smartrefresh
 
 Apply or Refresh _ANY_ stack containing a plan file.
 
-    terradactly smartapply <stack>
-    terradactly smartrefresh <stack>
+    terradactyl smartapply <stack>
+    terradactyl smartrefresh <stack>
 
 ### Getting Help
 
@@ -225,6 +239,7 @@ For help on any individual sub-command do:
 As previously mentioned, configuration is hierarchical. This means you may specify:
 
 * one project-level configuration for ALL stacks
+* an overriding subdirectory configuration for all stacks within the subdirectory
 * an overriding stack-level configuration for each independent stack
 
 See [examples](examples) for different setups.
@@ -265,6 +280,7 @@ terradactyl:              <Object, Terradactyl config>
   environment:            <Object, shell environment variables>
     TF_PLUGIN_CACHE_DIR:  <String, path to common Terraform plugin directory, default=$HOME/.terraform.d/plugins>
   misc:                   <Object, misc Terradactyl settings>
+    base_folder_name:     <String, name of the stack folder. Required for multiple stack subdirectories, default=nil>
     utf8:                 <Bool, use utf8 in stdout, default=true>
     disable_color:        <Bool, disable color in stdout, default=false>
   cleanup:                <Object, Terradactyl cleanup settings>
