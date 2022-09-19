@@ -147,4 +147,28 @@ RSpec.describe Terradactyl::ConfigStack do
       end
     end
   end
+
+  context 'when a base folder override is provided' do
+    let(:stack_name) { 'configless' }
+    subject { described_class.new(stack_name, 'mytestoverride') }
+
+    describe '#terradactyl' do
+      it 'returns Terradactyl config data' do
+        expect(subject.terradactyl).to be_a(OpenStruct)
+      end
+    end
+
+    describe '#terraform' do
+      it 'returns Terraform config data' do
+        expect(subject.terraform).to be_a(OpenStruct)
+        expect(subject.terraform.version).to eq(terraform_minimum)
+      end
+    end
+
+    describe '#base_folder' do
+      it 'returns the subdirectory base folder' do
+        expect(subject.base_folder).to eq('mytestoverride')
+      end
+    end
+  end
 end

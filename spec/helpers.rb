@@ -100,6 +100,21 @@ module Helpers
             validate:      'invalid.tf',
           }
         },
+        rev1_02_multi: {
+          version: '~> 1.2.0',
+          upgradeable: false,
+          base_override: 'nested',
+          artifacts: {
+            plan:          'rev1_02_multi.tfout',
+            plan_file_obj: '.terraform/terradactyl.planfile.data',
+            init:          '.terraform',
+            apply:         'terraform.tfstate',
+            refresh:       'terraform.tfstate',
+            destroy:       'terraform.tfstate',
+            lint:          'unlinted.tf',
+            validate:      'invalid.tf',
+          }
+        },
         rev1_02: {
           version: '~> 1.2.0',
           upgradeable: false,

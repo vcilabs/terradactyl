@@ -15,8 +15,12 @@ RSpec.describe Terradactyl::CLI do
 
       let(:num_of_stacks) { known_stacks.size }
 
+      let(:base_override) { info[:base_override] }
+
       # let(:target_stack) { known_stacks.shuffle.first }
-      let(:target_stack) { "#{tmpdir}/stacks/#{rev}" }
+      let(:target_stack) { 
+        base_override ? "#{tmpdir}/#{base_override}/#{rev}" : "#{tmpdir}/stacks/#{rev}"
+      }
 
       before(:each) do
         cp_fixtures(tmpdir)
@@ -35,7 +39,7 @@ RSpec.describe Terradactyl::CLI do
 
       describe "stacks (#{rev})" do
         let(:command) do
-          exe('terradactyl stacks', tmpdir)
+          exe("terradactyl stacks #{base_override}", tmpdir)
         end
 
         it 'displays a list of Terraform stacks' do
@@ -46,7 +50,7 @@ RSpec.describe Terradactyl::CLI do
 
       describe "version (#{rev})" do
         let(:command) do
-          exe('terradactyl version', tmpdir)
+          exe("terradactyl version", tmpdir)
         end
 
         it 'displays the Terradactyl version' do
@@ -80,7 +84,7 @@ RSpec.describe Terradactyl::CLI do
 
         context 'with valid stack_name' do
           let(:command) do
-            exe("terradactyl quickplan #{target_stack}", tmpdir)
+            exe("terradactyl quickplan #{target_stack} #{base_override}", tmpdir)
           end
 
           it 'displays a plan' do
@@ -91,7 +95,7 @@ RSpec.describe Terradactyl::CLI do
 
         context 'with valid relative path' do
           let(:command) do
-            exe("terradactyl quickplan stacks/#{target_stack}", tmpdir)
+              exe("terradactyl quickplan #{base_override || 'stacks'}/#{target_stack} #{base_override}", tmpdir)
           end
 
           it 'displays a plan' do
@@ -104,7 +108,7 @@ RSpec.describe Terradactyl::CLI do
       describe "lint (#{rev})" do
         context 'stack requires no formatting' do
           let(:command) do
-            exe("terradactyl lint #{target_stack}", tmpdir)
+            exe("terradactyl lint #{target_stack} #{base_override}", tmpdir)
           end
 
           it 'does nothing' do
@@ -122,7 +126,7 @@ RSpec.describe Terradactyl::CLI do
           end
 
           let(:command) do
-            exe("terradactyl lint #{target_stack}", tmpdir)
+            exe("terradactyl lint #{target_stack} #{base_override}", tmpdir)
           end
 
           it 'displays a formatting error' do
@@ -134,7 +138,7 @@ RSpec.describe Terradactyl::CLI do
 
       describe "fmt (#{rev})" do
         let(:command) do
-          exe("terradactyl fmt #{target_stack}", tmpdir)
+          exe("terradactyl fmt #{target_stack} #{base_override}", tmpdir)
         end
 
         it 'displays a formatting error' do
@@ -200,7 +204,7 @@ RSpec.describe Terradactyl::CLI do
         let(:stack_name) { rev.to_s }
 
         let(:command) do
-          exe("terradactyl upgrade #{stack_name}", tmpdir)
+          exe("terradactyl upgrade #{stack_name} #{base_override}", tmpdir)
         end
 
         let(:config)   { "#{tmpdir}/stacks/#{stack_name}/terradactyl.yaml" }

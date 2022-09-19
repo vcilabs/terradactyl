@@ -26,12 +26,12 @@ module Terradactyl
       end
 
       def dirty!(stack)
-        puts "inside Stacks.dirty! Marking #{stack} as dirty"
+        # puts "inside Stacks.dirty! Marking #{stack} as dirty"
         @@dirty << stack
       end
 
       def dirty?(name = nil)
-        puts "inside Stacks.dirty? name arg #{name}" # , dirty #{@@dirty}"
+        # puts "inside Stacks.dirty? name arg #{name}" # , dirty #{@@dirty}"
         return @@dirty.find { |s| s.name.eql?(validate(name)) } if name
 
         @@dirty.any?
@@ -47,16 +47,16 @@ module Terradactyl
     end
 
     def self.load(*args)
-      puts "inside Stacks load: #{args}"
+      # puts "inside Stacks load: #{args}"
       new(*args)
     end
 
     attr_reader :filter
 
-    def initialize(filter: StacksPlanFilterDefault.new, base_override: "")
-      puts "inside Stacks initialize, filter: #{filter}, base_ovr: #{base_override}"
-      base_folder = base_override != "" ? base_override : config.base_folder
-      puts "base_folder is #{base_folder}"
+    def initialize(filter: StacksPlanFilterDefault.new, base_override: nil)
+      # puts "inside Stacks initialize, filter: #{filter}, base_ovr: #{base_override}"
+      base_folder = base_override || config.base_folder
+      # puts "base_folder is #{base_folder}"
 
       @filter   = filter
       @base_dir = "#{Rake.original_dir}/#{base_folder}"
@@ -68,7 +68,7 @@ module Terradactyl
     end
 
     def validate(stack_name)
-      puts "inside stacks.validate #{stack_name}"
+      # puts "inside stacks.validate #{stack_name}"
       stack_name = stack_name.split('/').last
       @stacks.member?(stack_name) ? stack_name : nil
     end

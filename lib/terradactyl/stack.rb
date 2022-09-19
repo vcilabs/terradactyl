@@ -10,19 +10,16 @@ module Terradactyl
       new(stack_name)
     end
 
-    def initialize(stack_name, base_override="")
-      puts "inside Stack initialize, stack_name: #{stack_name}, base_override: #{base_override}"
-
-      if base_override != "" then
-        puts "config: #{config}"
-        puts config.merge_overlay(base_override)
-        puts "after config: #{config.terradactyl}"
+    def initialize(stack_name, base_override = nil)
+      if base_override
+        # merge the terradactyl.yaml inside the provided base folder
+        config.merge_overlay(base_override)
       end
 
-      @stack_name   = validate_stack_name(stack_name)
-      @base_override  = base_override # TODO validate
-      @stack_config = ConfigStack.new(@stack_name, @base_override)
-      @tf_version   = tf_version
+      @stack_name    = validate_stack_name(stack_name)
+      @base_override = base_override
+      @stack_config  = ConfigStack.new(@stack_name, @base_override)
+      @tf_version    = tf_version
       Commands.extend_by_revision(@tf_version, self)
       print_message "Terraform version: #{@tf_version}"
       inject_env_vars
@@ -90,7 +87,7 @@ module Terradactyl
     end
 
     def validate_stack_name(stack_name)
-      puts "inside validate_stack_name #{stack_name}"
+      # puts "inside validate_stack_name #{stack_name}"
       klass = self.class.to_s.split('::').last
       unless (valid_name = Stacks.validate(stack_name))
         print_crit("#{klass} not found: #{File.basename(stack_name)}")

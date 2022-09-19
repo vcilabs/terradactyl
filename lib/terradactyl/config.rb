@@ -44,14 +44,10 @@ module Terradactyl
     attr_reader :config_file, :terradactyl
 
     def initialize(config_file = nil, defaults: nil)
-      puts "inside ConfigApplication initialize. arguments - config_file: #{config_file}, defaults: #{defaults}"
-
       @config_file = config_file
       @defaults    = load_defaults(defaults)
       @overlay     = load_overlay(config_file)
       load_config
-
-      # binding.pry
     end
 
     def reload
@@ -75,9 +71,6 @@ module Terradactyl
       end
       @terradactyl = structify(@config).terradactyl
 
-      puts "inside ConfigApplication load_config. @terradactyl.to_s:"
-      puts @terradactyl.to_s # this is the contents of terradactyl.yaml
-
       configure_colorization
       @terradactyl
     end
@@ -87,8 +80,6 @@ module Terradactyl
     end
 
     def load_overlay(config_file)
-      puts "inside ConfigApplication (OG) load_overlay. config_file: #{config_file} #{config_file.to_s}"
-
       YAML.load_file(config_file.to_s)
     rescue Errno::ENOENT
       load_empty
@@ -130,11 +121,8 @@ module Terradactyl
 
     private_class_method :new
 
-    def load_overlay(_overload)
-      puts "inside ConfigProject load_overlay. overload arg: #{_overload}, ref'd config_file: #{config_file}"
-
-      config_file_path = _overload ? "./#{_overload}/#{config_file}" : config_file
-      puts "config_file_path: #{config_file_path}"
+    def load_overlay(overload)
+      config_file_path = overload ? "./#{overload}/#{config_file}" : config_file
 
       YAML.load_file(config_file_path)
     rescue Errno::ENOENT => e
@@ -142,24 +130,17 @@ module Terradactyl
     end
 
     def config_file
-      # puts "inside ConfigProject config_file def. What THE FUCK is the point of this shit"
       @config_file = CONFIG_PROJECT_FILE
     end
 
     def merge_overlay(overlay_path)
-      puts "inside ConfigProject merge_overlay. overload arg: #{overlay_path}, ref'd config_file: #{config_file}"
-
       config_file_path = overlay_path ? "./#{overlay_path}/#{config_file}" : config_file
-      puts "config_file_path: #{config_file_path}"
 
       config_to_merge = YAML.load_file(config_file_path)
-      puts "config to merge #{config_to_merge}"
 
       # set base_folder name if it's '.'
-      if config_to_merge['terradactyl']['base_folder'] == "." then
-        puts "relative base folder"
+      if config_to_merge['terradactyl']['base_folder'] == '.'
         config_to_merge['terradactyl']['base_folder'] = overlay_path
-        puts "UPDATED config to merge #{config_to_merge}"
       end
 
       load_config(overlay_override: config_to_merge)
@@ -177,18 +158,14 @@ module Terradactyl
 
     attr_reader :stack_name, :stack_path, :base_folder
 
-    def initialize(stack_name, base_override="")
-      puts "ConfigStack initialize, stack_name arg: #{stack_name}, base_override arg: #{base_override}"
-      
+    def initialize(stack_name, base_override = nil)
       @stack_name     = stack_name
       @project_config = ConfigProject.instance
-      @base_folder    = @project_config.base_folder # might change if base_override provided
+      @base_folder    = base_override || @project_config.base_folder
       @stack_path     = "#{@base_folder}/#{@stack_name}"
       @config_file    = "#{@stack_path}/#{ConfigProject::CONFIG_PROJECT_FILE}"
       @defaults       = load_defaults(@project_config.to_h)
       @overlay        = load_overlay(@config_file)
-      
-      puts "ConfigStack end of init, base_folder: #{@base_folder} stack_path: #{@stack_path} config_file: #{@config_file}"
 
       load_config
     end
@@ -244,15 +221,9 @@ module Terradactyl
     end
 
     def load_overlay(config_file)
-      puts "inside ConfigStack load_overlay"
       overlay = super(config_file)
 
-      puts "ConfigStack arg config_file: #{config_file}, overlay: #{overlay}"
-
-      # TODO: do additional condition overlay if base_override is provided
-
       unless overlay_specifies_version?(overlay)
-        puts "inside conditional block #{terraform_required_version}"
         overlay.merge!(terraform_required_version)
       end
 
