@@ -14,6 +14,8 @@ module Terradactyl
       if base_override
         # merge the terradactyl.yaml inside the provided base folder
         config.merge_overlay(base_override)
+      else
+        config.reload
       end
 
       @stack_name    = validate_stack_name(stack_name)

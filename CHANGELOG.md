@@ -10,6 +10,7 @@ NEW FEATURES:
 BUG FIXES:
 
 * fix StacksApplyFilterPrePlanned filtering behaviour
+* rspec outputs in documentation format
 
 ## 1.2.1 (2022-06-13)
 
