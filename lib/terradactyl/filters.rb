@@ -16,10 +16,6 @@ module Terradactyl
       `git ls-files .`
     end
 
-    # def base_dir
-    #   config.base_folder
-    # end
-
     def stack_name(path)
       path.split('/')[1]
     end
