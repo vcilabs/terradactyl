@@ -1,5 +1,16 @@
 # CHANGELOG
 
+## 1.4.0 (2022-09-21)
+
+NEW FEATURES:
+
+* add support for multiple stack subdirectories
+* add optional BASE_FOLDER input for most Terradactyl commands
+
+BUG FIXES:
+
+* fix StacksApplyFilterPrePlanned filtering behaviour
+
 ## 1.3.0 (2022-09-21)
 
 NEW FEATURES:

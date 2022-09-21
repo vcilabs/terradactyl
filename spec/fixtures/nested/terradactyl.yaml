@@ -1,0 +1,22 @@
+---
+terradactyl:
+  base_folder: .
+  terraform:
+    version: 1.0.0
+    autoinstall: true
+    init:
+      lock: false
+      no_color: true
+  environment:
+    FOO: bar
+    BAZ: baz
+  cleanup:
+    empty: true
+    match:
+      - "*.tfstate*"
+      - "*.tfout"
+      - "*.tflock"
+      - ".terraform"
+  misc:
+    base_folder_name: nested
+    utf8: false

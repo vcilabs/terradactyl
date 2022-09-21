@@ -1,0 +1,4 @@
+terradactyl:
+  base_folder: test-stacks
+  terraform:
+    version: 0.15.1

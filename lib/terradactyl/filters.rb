@@ -16,15 +16,11 @@ module Terradactyl
       `git ls-files .`
     end
 
-    def base_dir
-      config.base_folder
-    end
-
     def stack_name(path)
       path.split('/')[1]
     end
 
-    def sift(stacks)
+    def sift(stacks, _base_dir)
       stacks
     end
   end
@@ -42,7 +38,7 @@ module Terradactyl
       `git --no-pager diff --name-only HEAD .`
     end
 
-    def sift(stacks)
+    def sift(stacks, base_dir)
       modified = git_cmd.split.each_with_object([]) do |path, memo|
         memo << stack_name(path) if path =~ /#{base_dir}/
       end
@@ -90,8 +86,8 @@ module Terradactyl
   end
 
   class StacksApplyFilterPrePlanned < StacksApplyFilterDefault
-    def sift(stacks)
-      targets = Dir.glob('**/*.tfout').each_with_object([]) do |path, memo|
+    def sift(stacks, base_dir)
+      targets = Dir.glob("#{base_dir}/**/*.tfout").each_with_object([]) do |path, memo|
         memo << path.split('/')[1]
       end
       stacks & targets

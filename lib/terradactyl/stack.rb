@@ -10,10 +10,18 @@ module Terradactyl
       new(stack_name)
     end
 
-    def initialize(stack_name)
-      @stack_name   = validate_stack_name(stack_name)
-      @stack_config = ConfigStack.new(@stack_name)
-      @tf_version   = tf_version
+    def initialize(stack_name, base_override = nil)
+      if base_override
+        # merge the terradactyl.yaml inside the provided base folder
+        config.merge_overlay(base_override)
+      else
+        config.reload
+      end
+
+      @stack_name    = validate_stack_name(stack_name)
+      @base_override = base_override
+      @stack_config  = ConfigStack.new(@stack_name, @base_override)
+      @tf_version    = tf_version
       Commands.extend_by_revision(@tf_version, self)
       print_message "Terraform version: #{@tf_version}"
       inject_env_vars

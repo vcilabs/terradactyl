@@ -23,4 +23,4 @@ jobs:
           bundler-cache: true
       - name: Run tests
         id: test
-        run: bundle exec rake spec
+        run: bundle exec rake doc

@@ -61,15 +61,16 @@ module Terradactyl
 
     private
 
-    def load_config
+    def load_config(defaults_override: nil, overlay_override: nil)
       @config = [
-        @defaults,
-        @overlay
+        defaults_override || @defaults,
+        overlay_override || @overlay
       ].inject({}) do |memo, obj|
         memo.deep_merge!(obj, overwrite_arrays: true)
         Marshal.load(Marshal.dump(memo))
       end
       @terradactyl = structify(@config).terradactyl
+
       configure_colorization
       @terradactyl
     end
@@ -120,14 +121,31 @@ module Terradactyl
 
     private_class_method :new
 
-    def load_overlay(_overload)
-      YAML.load_file(config_file)
+    def load_overlay(overload)
+      config_file_path = overload ? "./#{overload}/#{config_file}" : config_file
+
+      YAML.load_file(config_file_path)
     rescue Errno::ENOENT => e
       abort "FATAL: Could not load project file: `#{config_file}`, #{e.message}"
     end
 
     def config_file
       @config_file = CONFIG_PROJECT_FILE
+    end
+
+    def merge_overlay(overlay_path)
+      config_file_path = overlay_path ? "./#{overlay_path}/#{config_file}" : config_file
+
+      config_to_merge = YAML.load_file(config_file_path)
+
+      # set base_folder name if it's '.'
+      if config_to_merge['terradactyl']['base_folder'] == '.'
+        config_to_merge['terradactyl']['base_folder'] = overlay_path
+      end
+
+      load_config(overlay_override: config_to_merge)
+    rescue Errno::ENOENT => e
+      abort "FATAL: Could not load project file: `#{config_file}`, #{e.message}"
     end
   end
 
@@ -140,14 +158,15 @@ module Terradactyl
 
     attr_reader :stack_name, :stack_path, :base_folder
 
-    def initialize(stack_name)
+    def initialize(stack_name, base_override = nil)
       @stack_name     = stack_name
       @project_config = ConfigProject.instance
-      @base_folder    = @project_config.base_folder
+      @base_folder    = base_override || @project_config.base_folder
       @stack_path     = "#{@base_folder}/#{@stack_name}"
       @config_file    = "#{@stack_path}/#{ConfigProject::CONFIG_PROJECT_FILE}"
       @defaults       = load_defaults(@project_config.to_h)
       @overlay        = load_overlay(@config_file)
+
       load_config
     end
 

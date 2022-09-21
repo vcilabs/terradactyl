@@ -42,7 +42,7 @@ RSpec.describe Terradactyl::Stacks do
         end
       end
       context 'when the specified stack does NOT exist' do
-        it 'returns true' do
+        it 'returns false' do
           expect(subject.validate('foo')).to be_falsey
         end
       end
@@ -76,6 +76,43 @@ RSpec.describe Terradactyl::Stacks do
         it 'returns true' do
           expect(described_class.dirty?("stacks/#{stack_name}")).to be_truthy
         end
+      end
+    end
+  end
+
+  context 'instance methods when passed base_override' do
+    let(:known_stacks)  { Dir["#{tmpdir}/nested/*/"] }
+    let(:overridden_stacks) { Terradactyl::Stacks.new(base_override: 'nested') }
+
+    describe '#list' do
+      it 'displays a list of Terraform stacks' do
+        expect(overridden_stacks.list).to be_a(Array)
+        expect(overridden_stacks.list.size).to eq(num_of_stacks)
+      end
+    end
+
+    describe '#validate' do
+      context 'when the specified stack exists' do
+        it 'returns true' do
+          expect(overridden_stacks.validate(stack_name)).to be_truthy
+        end
+      end
+      context 'when the specified stack does NOT exist' do
+        it 'returns false' do
+          expect(overridden_stacks.validate('foo')).to be_falsey
+        end
+      end
+    end
+
+    describe '#size' do
+      it 'displays the num of stacks' do
+        expect(overridden_stacks.size).to eq(num_of_stacks)
+      end
+    end
+
+    describe '#each' do
+      it 'returns an iterator for stacks' do
+        expect(overridden_stacks.each).to be_a(Enumerator)
       end
     end
   end

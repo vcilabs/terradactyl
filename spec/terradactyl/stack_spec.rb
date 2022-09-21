@@ -3,10 +3,11 @@ require 'spec_helper'
 RSpec.describe Terradactyl::Stack do
   Helpers.terraform_test_matrix.each_pair do |rev, info|
     context "when Terraform version is #{rev}" do
-      let(:stack_name) { rev.to_s }
-      let(:stack)      { silence { Terradactyl::Stack.new(stack_name) } }
-      let(:stack_path) { stack.path }
-      let(:config)     { stack.config }
+      let(:stack_name)    { rev.to_s }
+      let(:base_override) { info[:base_override] }
+      let(:stack)         { silence { Terradactyl::Stack.new(stack_name, base_override) } }
+      let(:stack_path)    { stack.path }
+      let(:config)        { stack.config }
       let(:unlinted) do
         <<~LINT_ME
           resource "null_resource" "unlinted"{}
@@ -53,7 +54,8 @@ RSpec.describe Terradactyl::Stack do
       let(:tmpdir) { Dir.mktmpdir('rspec_terradactyl') }
 
       let(:plan_file_signature) do
-        eval("Terradactyl::Terraform::#{rev.capitalize}::PlanFileParser::PLAN_FILE_SIGNATURE")
+        supported_rev = rev.match(/rev\d+(?:_\d+)*/i).to_s || rev
+        eval("Terradactyl::Terraform::#{supported_rev.capitalize}::PlanFileParser::PLAN_FILE_SIGNATURE")
       end
 
       before(:each) do
