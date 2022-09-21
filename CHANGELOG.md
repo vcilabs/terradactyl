@@ -1,6 +1,6 @@
 # CHANGELOG
 
-## 1.3.0 (2022-09-20)
+## 1.4.0 (2022-09-21)
 
 NEW FEATURES:
 
@@ -11,6 +11,12 @@ BUG FIXES:
 
 * fix StacksApplyFilterPrePlanned filtering behaviour
 * rspec outputs in documentation format
+
+## 1.3.0 (2022-09-21)
+
+NEW FEATURES:
+
+* add support for Terraform version '~> 1.3.0`
 
 ## 1.2.1 (2022-06-13)
 
