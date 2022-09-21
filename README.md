@@ -19,7 +19,7 @@ Terradactyl simplifies managing large heterogeneous Terraform monorepos by intro
 
 Requires Ruby 2.5 or greater.
 
-NOTE: Terraform sub-command operations are only supported between stable versions `>= 0.11.x` to `~> 1.2.x`.
+NOTE: Terraform sub-command operations are only supported between stable versions `>= 0.11.x` to `~> 1.3.x`.
 
 ## Installation
 
