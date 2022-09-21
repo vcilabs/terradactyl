@@ -207,8 +207,8 @@ RSpec.describe Terradactyl::CLI do
           exe("terradactyl upgrade #{stack_name} #{base_override}", tmpdir)
         end
 
-        let(:config)   { "#{tmpdir}/stacks/#{stack_name}/terradactyl.yaml" }
-        let(:versions) { "#{tmpdir}/stacks/#{stack_name}/versions.tf" }
+        let(:config)   { "#{tmpdir}/#{base_override || 'stacks'}/#{stack_name}/terradactyl.yaml" }
+        let(:versions) { "#{tmpdir}/#{base_override || 'stacks'}/#{stack_name}/versions.tf" }
 
         before(:each) do
           cp_fixtures(tmpdir)

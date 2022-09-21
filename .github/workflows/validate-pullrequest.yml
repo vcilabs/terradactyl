@@ -26,4 +26,4 @@ jobs:
         run: bundle exec rake lint
       - name: Run tests
         id: test
-        run: bundle exec rake spec
+        run: bundle exec rake doc

@@ -102,7 +102,7 @@ module Helpers
         },
         rev1_02_multi: {
           version: '~> 1.2.0',
-          upgradeable: false,
+          upgradeable: true,
           base_override: 'nested',
           artifacts: {
             plan:          'rev1_02_multi.tfout',

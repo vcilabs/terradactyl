@@ -4,8 +4,10 @@ require 'uri'
 require 'bundler/gem_tasks'
 require 'rspec/core/rake_task'
 
-RSpec::Core::RakeTask.new(:spec) do |t|
-  t.rspec_opts = "--format documentation"
+RSpec::Core::RakeTask.new(:spec)
+
+RSpec::Core::RakeTask.new(:doc) do |t|
+  t.rspec_opts = "--format doc"
 end
 
 task :default => :spec
