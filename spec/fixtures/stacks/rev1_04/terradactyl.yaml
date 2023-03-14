@@ -1,0 +1,6 @@
+---
+terradactyl:
+  terraform:
+    version: ~> 1.4.0
+  environment:
+    TF_PLUGIN_CACHE_MAY_BREAK_DEPENDENCY_LOCK_FILE: 'true'

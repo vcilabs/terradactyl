@@ -1,5 +1,12 @@
 # CHANGELOG
 
+## 1.4.1 (2023-03-14)
+
+NEW FEATURES:
+
+* add support for Terraform version '~> 1.4.0`
+* add TF_PLUGIN_CACHE_MAY_BREAK_DEPENDENCY_LOCK_FILE as a default terradactyl configuration
+
 ## 1.4.0 (2022-09-21)
 
 NEW FEATURES:
