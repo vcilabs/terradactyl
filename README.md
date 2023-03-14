@@ -279,6 +279,7 @@ terradactyl:              <Object, Terradactyl config>
       force:              <Bool, skip interactive approval before destroying, default=true>
   environment:            <Object, shell environment variables>
     TF_PLUGIN_CACHE_DIR:  <String, path to common Terraform plugin directory, default=$HOME/.terraform.d/plugins>
+    TF_PLUGIN_CACHE_MAY_BREAK_DEPENDENCY_LOCK_FILE: <String, required for Terraform version 1.4 onwards, default=true>
   misc:                   <Object, misc Terradactyl settings>
     base_folder_name:     <String, name of the stack folder. Required for multiple stack subdirectories, default=nil>
     utf8:                 <Bool, use utf8 in stdout, default=true>

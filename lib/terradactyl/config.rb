@@ -29,6 +29,7 @@ module Terradactyl
             auto_approve: true
         environment:
           TF_PLUGIN_CACHE_DIR: ~/.terraform.d/plugins
+          TF_PLUGIN_CACHE_MAY_BREAK_DEPENDENCY_LOCK_FILE: 'true'
         misc:
           utf8: true
           disable_color: false
