@@ -145,9 +145,23 @@ module Helpers
         },
         rev1_04: {
           version: '~> 1.4.0',
-          upgradeable: false,
+          upgradeable: true,
           artifacts: {
             plan:          'rev1_04.tfout',
+            plan_file_obj: '.terraform/terradactyl.planfile.data',
+            init:          '.terraform',
+            apply:         'terraform.tfstate',
+            refresh:       'terraform.tfstate',
+            destroy:       'terraform.tfstate',
+            lint:          'unlinted.tf',
+            validate:      'invalid.tf',
+          }
+        },
+        rev1_05: {
+          version: '~> 1.5.0',
+          upgradeable: false,
+          artifacts: {
+            plan:          'rev1_05.tfout',
             plan_file_obj: '.terraform/terradactyl.planfile.data',
             init:          '.terraform',
             apply:         'terraform.tfstate',
