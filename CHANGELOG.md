@@ -1,5 +1,11 @@
 # CHANGELOG
 
+## 1.7.0 (2024-01-17)
+
+NEW FEATURES:
+
+* add support for Terraform version '~> 1.7.0`
+
 ## 1.6.0 (2023-10-04)
 
 NEW FEATURES:
