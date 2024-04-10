@@ -514,6 +514,22 @@ module Terradactyl
         Terraform::Rev1_07::PlanFileParser
       end
     end
+
+    module Rev1_08
+      class << self
+        def upgradeable?
+          false
+        end
+      end
+
+      include Terraform::Commands
+
+      private
+
+      def parser
+        Terraform::Rev1_08::PlanFileParser
+      end
+    end
   end
   # rubocop:enable Metrics/ModuleLength
 end
