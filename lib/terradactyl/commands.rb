@@ -515,7 +515,6 @@ module Terradactyl
       end
     end
 
-
     module Rev1_08
       class << self
         def upgradeable?
@@ -531,7 +530,6 @@ module Terradactyl
         Terraform::Rev1_08::PlanFileParser
       end
     end
-
   end
   # rubocop:enable Metrics/ModuleLength
 end
