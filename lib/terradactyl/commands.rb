@@ -58,7 +58,11 @@ module Terradactyl
     class << self
       def extend_by_revision(tf_version, object)
         anon_module = revision_module
-        revision    = revision_constant(tf_version)
+        begin
+          revision = revision_constant(tf_version)
+        rescue NameError
+          revision = revision_constant(major_revision(tf_version))
+        end
 
         anon_module.include(self)
         anon_module.prepend(revision)
@@ -100,6 +104,12 @@ module Terradactyl
       def revision_constant(tf_version)
         revision = Terradactyl::Terraform.calc_revision(tf_version)
         const_get(revision)
+      rescue NameError
+        raise
+      end
+
+      def major_revision(tf_version)
+        tf_version.split('.').first
       end
     end
 
@@ -528,6 +538,22 @@ module Terradactyl
 
       def parser
         Terraform::Rev1_08::PlanFileParser
+      end
+    end
+
+    module Rev1_latest
+      class << self
+        def upgradeable?
+          false
+        end
+      end
+
+      include Terraform::Commands
+
+      private
+
+      def parser
+        Terraform::Rev1_latest::PlanFileParser
       end
     end
   end

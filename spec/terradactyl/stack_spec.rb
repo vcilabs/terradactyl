@@ -54,7 +54,7 @@ RSpec.describe Terradactyl::Stack do
       let(:tmpdir) { Dir.mktmpdir('rspec_terradactyl') }
 
       let(:plan_file_signature) do
-        supported_rev = rev.match(/rev\d+(?:_\d+)*/i).to_s || rev
+        supported_rev = rev.match(/rev\d+(?:_(?:\d+|latest))*/i).to_s || rev
         eval("Terradactyl::Terraform::#{supported_rev.capitalize}::PlanFileParser::PLAN_FILE_SIGNATURE")
       end
 

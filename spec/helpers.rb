@@ -213,6 +213,20 @@ module Helpers
             validate:      'invalid.tf',
           }
         },
+        rev1_latest: {
+          version: '~> 1.0',
+          upgradeable: false,
+          artifacts: {
+            plan:          'rev1_latest.tfout',
+            plan_file_obj: '.terraform/terradactyl.planfile.data',
+            init:          '.terraform',
+            apply:         'terraform.tfstate',
+            refresh:       'terraform.tfstate',
+            destroy:       'terraform.tfstate',
+            lint:          'unlinted.tf',
+            validate:      'invalid.tf',
+          }
+        },
       }
     end
   end
