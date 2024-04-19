@@ -44,8 +44,8 @@ module Terradactyl
       new.validate(stack)
     end
 
-    def self.load(*args)
-      new(*args)
+    def self.load(*args, **kwargs)
+      new(*args, **kwargs)
     end
 
     attr_reader :filter
