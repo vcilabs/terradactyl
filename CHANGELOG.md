@@ -1,5 +1,11 @@
 # CHANGELOG
 
+## 1.8.2 (2024-04-24)
+
+BUG FIX:
+
+* update depends on terradactyl-terraform to '>= 1.8.2'
+
 ## 1.8.1 (2024-04-18)
 
 NEW FEATURES:
