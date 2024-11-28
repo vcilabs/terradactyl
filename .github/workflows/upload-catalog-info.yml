@@ -1,0 +1,17 @@
+name: Upload catalog-info.yaml to S3
+on:
+  push:
+    branches:
+      - main
+    paths:
+      - catalog-info.yaml
+
+jobs:
+  upload-catalog-info:
+    name: Upload catalog-info.yaml to S3
+    uses: vcilabs/common-workflows/.github/workflows/upload-catalog-info.yml@main
+    with:
+      org: ${{ github.repository_owner }}
+      repo: ${{ github.event.repository.name }}
+    secrets:
+      gh_token: ${{ secrets.ORG_ALIDABOT_DEV_GITHUB_TOKEN }}

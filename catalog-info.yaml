@@ -1,0 +1,30 @@
+apiVersion: backstage.io/v1alpha1
+kind: Component
+metadata:
+  name: terradactyl
+  description: terradactyl
+  annotations:
+    github.com/project-slug: vcilabs/terradactyl
+#    snyk.io/org-id: dab027f1-f6d3-4923-92f6-b32facf4824e
+#    snyk.io/target-id: 
+    
+spec:
+  type: service
+  lifecycle: production
+  owner: cloudsystems
+#  providesApis:
+#  - terradactyl-api
+#
+#---
+#
+#apiVersion: backstage.io/v1alpha1
+#kind: API
+#metadata:
+#  name: terradactyl-api
+#  description: terradactyl API
+#spec:
+#  type: openapi
+#  lifecycle: production
+#  owner: cloudsystems
+#  definition:
+#    $openapi: https://github.com/vcilabs/terradactyl/blob/main/terradactyl.API.yaml
